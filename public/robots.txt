@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://signature-cleans.co.uk/sitemap.xml
+
+# Block admin pages
+Disallow: /admin

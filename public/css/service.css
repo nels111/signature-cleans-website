@@ -1,0 +1,200 @@
+/* ============================================
+   SERVICE PAGE STYLES
+   ============================================ */
+
+.service-hero {
+    padding: 160px 0 60px;
+    background: var(--color-surface);
+    text-align: center;
+}
+
+.service-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-accent);
+    margin-bottom: var(--space-xs);
+}
+
+.service-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--space-sm);
+}
+
+.service-hero p {
+    font-size: 1.25rem;
+    color: var(--color-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Service Image */
+.service-image-section {
+    padding: 0 0 var(--space-lg);
+    background: var(--color-background);
+}
+
+.service-image-section img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+/* Service Content */
+.service-content {
+    padding: var(--space-lg) 0 var(--space-xl);
+    background: var(--color-background);
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-lg);
+    align-items: start;
+}
+
+.content-main h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-sm);
+}
+
+.content-main h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-sm);
+}
+
+.content-main p {
+    color: var(--color-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    margin-bottom: var(--space-sm);
+}
+
+.content-main ul {
+    list-style: none;
+    margin-bottom: var(--space-sm);
+}
+
+.content-main li {
+    position: relative;
+    padding-left: 24px;
+    margin-bottom: var(--space-xs);
+    color: var(--color-secondary);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.content-main li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-accent);
+    border-radius: 50%;
+}
+
+.content-main li strong {
+    color: var(--color-primary);
+}
+
+/* Sidebar */
+.content-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+.sidebar-card {
+    background: var(--color-surface);
+    padding: var(--space-md);
+    border-radius: 16px;
+    margin-bottom: var(--space-md);
+}
+
+.sidebar-card h4 {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.sidebar-card p {
+    color: var(--color-secondary);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-sm);
+}
+
+.sidebar-cta {
+    display: block;
+    text-align: center;
+    background: var(--color-primary);
+    color: var(--color-background);
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: all var(--transition-fast);
+}
+
+.sidebar-cta:hover {
+    background: var(--color-accent);
+}
+
+.sidebar-phone {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+.sidebar-card.highlight {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.sidebar-card.highlight h4 {
+    color: var(--color-background);
+}
+
+.sidebar-card.highlight ul {
+    list-style: none;
+}
+
+.sidebar-card.highlight li {
+    font-size: 0.9375rem;
+    padding: 4px 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .content-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--space-md);
+    }
+    
+    .sidebar-card {
+        margin-bottom: 0;
+    }
+}

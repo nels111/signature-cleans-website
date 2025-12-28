@@ -1,0 +1,253 @@
+/* ============================================
+   ABOUT PAGE STYLES
+   ============================================ */
+
+.about-hero {
+    padding: 180px 0 80px;
+    background: var(--color-surface);
+    text-align: center;
+}
+
+.about-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: var(--space-sm);
+}
+
+.about-hero p {
+    font-size: 1.25rem;
+    color: var(--color-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Story Section */
+.story {
+    padding: var(--space-xl) 0;
+    background: var(--color-background);
+}
+
+.story-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+    align-items: center;
+}
+
+.story-content h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-md);
+}
+
+.story-content p {
+    color: var(--color-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    margin-bottom: var(--space-sm);
+}
+
+.story-content p:last-child {
+    margin-bottom: 0;
+}
+
+.story-image {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.story-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Values Section */
+.values {
+    padding: var(--space-xl) 0;
+    background: var(--color-surface);
+}
+
+.values h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-lg);
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.value-card {
+    background: var(--color-background);
+    padding: var(--space-md);
+    border-radius: 16px;
+}
+
+.value-number {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin-bottom: var(--space-xs);
+}
+
+.value-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+    letter-spacing: -0.01em;
+}
+
+.value-card p {
+    color: var(--color-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+}
+
+/* Team Section */
+.team {
+    padding: var(--space-xl) 0;
+    background: var(--color-background);
+}
+
+.team h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-lg);
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.team-member {
+    text-align: center;
+}
+
+.team-avatar {
+    width: 100px;
+    height: 100px;
+    background: var(--color-surface);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 auto var(--space-sm);
+}
+
+.team-member h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.team-role {
+    color: var(--color-accent);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--space-xs);
+}
+
+.team-bio {
+    color: var(--color-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+/* Areas Section */
+.areas {
+    padding: var(--space-xl) 0;
+    background: var(--color-surface);
+}
+
+.areas h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-xs);
+}
+
+.areas-intro {
+    text-align: center;
+    color: var(--color-secondary);
+    margin-bottom: var(--space-lg);
+}
+
+.areas-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+}
+
+.area-item {
+    background: var(--color-background);
+    padding: var(--space-md);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.area-item h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.area-item p {
+    color: var(--color-secondary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .story-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .story-image {
+        order: -1;
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .areas-list {
+        grid-template-columns: 1fr;
+    }
+}
