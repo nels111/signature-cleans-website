@@ -11,10 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
 
     var SIZE_LABELS = {
-        'small':      'Small (under 2,000 sq ft)',
-        'medium':     'Medium (2,000 - 10,000 sq ft)',
-        'large':      'Large (10,000 - 50,000 sq ft)',
-        'very-large': 'Very Large (50,000+ sq ft)'
+        'small':      'Small (under 200 m\u00B2)',
+        'medium':     'Medium (200 - 1,000 m\u00B2)',
+        'large':      'Large (1,000 - 5,000 m\u00B2)',
+        'very-large': 'Very Large (5,000+ m\u00B2)'
     };
 
     // ========================================
