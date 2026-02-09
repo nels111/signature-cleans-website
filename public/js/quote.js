@@ -268,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             data.sector = siteTypeToSector[data.siteType] || 'other';
             data.serviceType = 'contract';
+            data.leadSource = 'website-estimator';
 
             try {
                 var response = await fetch('/api/quote', {
