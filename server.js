@@ -56,13 +56,6 @@ db.exec(`
   )
 `);
 
-// Add estimate columns if they don't exist (migration for existing databases)
-try {
-  db.exec(`ALTER TABLE submissions ADD COLUMN estimate TEXT`);
-} catch (e) { /* column already exists */ }
-try {
-  db.exec(`ALTER TABLE submissions ADD COLUMN estimatedHours TEXT`);
-} catch (e) { /* column already exists */ }
 
 // ============================================
 // EMAIL CONFIGURATION
@@ -255,7 +248,7 @@ const ESTIMATOR_CONFIG = {
 // ============================================
 
 // Estimate endpoint — Price Bands calculation
-app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 30 }), (req, res) => {
+app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
   try {
     const { siteType, size, frequency } = req.body;
     const freq = parseInt(frequency);

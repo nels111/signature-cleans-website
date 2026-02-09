@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Quote Estimator | Signature Cleans - Commercial Cleaning Exeter</title>
-    <meta name="description" content="Get an instant cleaning quote estimate in 30 seconds. Commercial cleaning services in Exeter, Devon, Cornwall and Somerset. No obligation, transparent pricing.">
+    <title>Get a Quote | Signature Cleans - Commercial Cleaning Exeter</title>
+    <meta name="description" content="Get a commercial cleaning quote. Use our instant estimator for a guide price or book a free site visit. Serving Exeter, Devon, Cornwall and Somerset.">
     <link rel="canonical" href="https://signature-cleans.co.uk/quote.html">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,254 +53,158 @@
     <!-- Quote Hero -->
     <section class="quote-hero">
         <div class="container">
-            <h1>Instant Quote Estimator</h1>
-            <p>Get a guide price in 30 seconds. No obligation, completely free.</p>
+            <h1>Get a Quote</h1>
+            <p>Two ways to get started &mdash; choose the option that suits you best</p>
         </div>
     </section>
 
-    <!-- Estimator Section -->
-    <section class="estimator-section">
+    <!-- Two Options -->
+    <section class="quote-options-section">
         <div class="container">
-            <div class="estimator-container">
+            <div class="quote-options-grid">
 
-                <!-- Progress Steps -->
-                <div class="progress-bar">
-                    <div class="progress-step active" data-step="1">
-                        <div class="step-number">1</div>
-                        <span class="step-label">Site Type</span>
+                <a href="estimator.html" class="quote-option-card">
+                    <div class="quote-option-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h5"/><circle cx="16" cy="18" r="2"/></svg>
                     </div>
-                    <div class="progress-line"><div class="progress-line-fill" id="progress-line-1"></div></div>
-                    <div class="progress-step" data-step="2">
-                        <div class="step-number">2</div>
-                        <span class="step-label">Requirements</span>
+                    <h2>Instant Quote Estimator</h2>
+                    <p>Get a guide price band in 30 seconds based on your site type, size and frequency. No sign-up required.</p>
+                    <span class="quote-option-cta">
+                        Try the Estimator
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+                    </span>
+                </a>
+
+                <a href="#book-visit" class="quote-option-card featured">
+                    <div class="quote-option-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg>
                     </div>
-                    <div class="progress-line"><div class="progress-line-fill" id="progress-line-2"></div></div>
-                    <div class="progress-step" data-step="3">
-                        <div class="step-number">3</div>
-                        <span class="step-label">Your Estimate</span>
-                    </div>
+                    <h2>Book a Free Site Visit</h2>
+                    <p>We'll visit your premises, assess your needs in person, and provide a detailed, tailored quote. Completely free, no obligation.</p>
+                    <span class="quote-option-cta">
+                        Book a Visit
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+                    </span>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Book a Site Visit Form -->
+    <section class="quote-form-section" id="book-visit">
+        <div class="container">
+            <div class="quote-grid">
+                <div class="quote-form-container">
+                    <h2>Book a Free Site Visit</h2>
+                    <p class="form-intro">Tell us about your site and we'll arrange a convenient time to visit, assess your needs, and provide a detailed quote.</p>
+
+                    <form id="quote-form" class="quote-form" novalidate>
+                        <!-- Honeypot -->
+                        <div style="position: absolute; left: -9999px;" aria-hidden="true">
+                            <label for="website">Website</label>
+                            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                        </div>
+
+                        <div id="form-messages" class="form-messages"></div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Your Name <span class="required">*</span></label>
+                                <input type="text" id="name" name="name" required autocomplete="name" placeholder="John Smith">
+                            </div>
+                            <div class="form-group">
+                                <label for="company">Company Name</label>
+                                <input type="text" id="company" name="company" autocomplete="organization" placeholder="Your company">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email Address <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" required autocomplete="email" placeholder="john@company.co.uk">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="07xxx xxxxxx">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="serviceType">Service Required <span class="required">*</span></label>
+                                <select id="serviceType" name="serviceType" required>
+                                    <option value="">Select a service</option>
+                                    <option value="contract">Contract Cleaning</option>
+                                    <option value="deep-clean">Deep Cleaning</option>
+                                    <option value="specialist">Specialist Services</option>
+                                    <option value="other">Other / Not Sure</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sector">Property Type <span class="required">*</span></label>
+                                <select id="sector" name="sector" required>
+                                    <option value="">Select a type</option>
+                                    <option value="office">Office / Commercial</option>
+                                    <option value="medical">Medical / Dental</option>
+                                    <option value="hospitality">Hospitality / Venue</option>
+                                    <option value="education">Education</option>
+                                    <option value="construction">Construction / Welfare</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postcode">Site Postcode</label>
+                            <input type="text" id="postcode" name="postcode" autocomplete="postal-code" placeholder="EX1 1AA" style="max-width: 200px;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Tell us about your requirements</label>
+                            <textarea id="message" name="message" rows="4" placeholder="Site details, current cleaning arrangements, any specific needs..."></textarea>
+                        </div>
+
+                        <div class="form-submit">
+                            <button type="submit" class="submit-btn">Book My Free Site Visit</button>
+                            <p class="form-note">We'll be in touch within 24 hours to arrange a convenient time</p>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Step 1: Site Type -->
-                <div class="estimator-step active" id="step-1">
-                    <h2 class="step-title">What type of site needs cleaning?</h2>
-                    <p class="step-subtitle">Select the option that best describes your premises</p>
-
-                    <div class="site-type-grid">
-                        <button class="site-type-card" data-type="Office/Commercial">
-                            <div class="site-type-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 7v14m6-14v14m6-14v14m6-14v14M6 7h12M6 3h12v4H6z"/></svg>
-                            </div>
-                            <h3>Office / Commercial</h3>
-                            <p>Offices, professional spaces, business parks</p>
-                        </button>
-
-                        <button class="site-type-card" data-type="Dental/Medical">
-                            <div class="site-type-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                            </div>
-                            <h3>Medical / Dental</h3>
-                            <p>Surgeries, clinics, dental practices</p>
-                        </button>
-
-                        <button class="site-type-card" data-type="Hospitality/Venue">
-                            <div class="site-type-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm2-6h12v2H4z"/></svg>
-                            </div>
-                            <h3>Hospitality / Venue</h3>
-                            <p>Hotels, restaurants, event spaces</p>
-                        </button>
-
-                        <button class="site-type-card" data-type="Education/Institutional">
-                            <div class="site-type-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zm20 0h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-                            </div>
-                            <h3>Education</h3>
-                            <p>Schools, colleges, training centres</p>
-                        </button>
-
-                        <button class="site-type-card" data-type="Welfare/Construction">
-                            <div class="site-type-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 20h20M5 20V8l7-5 7 5v12M9 20v-6h6v6"/></svg>
-                            </div>
-                            <h3>Welfare / Construction</h3>
-                            <p>Site cabins, welfare units, portacabins</p>
-                        </button>
-
-                        <button class="site-type-card" data-type="Specialist/Industrial">
-                            <div class="site-type-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-                            </div>
-                            <h3>Specialist / Industrial</h3>
-                            <p>Workshops, warehouses, showrooms</p>
-                        </button>
+                <aside class="quote-sidebar">
+                    <div class="sidebar-card highlight">
+                        <h4>Want a quick guide price?</h4>
+                        <p>Try our Instant Estimator to get a price band in 30 seconds.</p>
+                        <a href="estimator.html" class="sidebar-cta" style="display: inline-block; margin-top: 12px; background: var(--color-accent); color: white; padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 500;">Try the Estimator</a>
                     </div>
-                </div>
 
-                <!-- Step 2: Requirements -->
-                <div class="estimator-step" id="step-2">
-                    <h2 class="step-title">Tell us about your requirements</h2>
-                    <p class="step-subtitle">This helps us calculate your estimate</p>
-
-                    <div class="requirements-form">
-                        <div class="requirement-group">
-                            <label>Approximate site size</label>
-                            <div class="size-options">
-                                <button class="size-option" data-size="small">
-                                    <span class="size-label">Small</span>
-                                    <span class="size-detail">Under 200 m&sup2;</span>
-                                </button>
-                                <button class="size-option" data-size="medium">
-                                    <span class="size-label">Medium</span>
-                                    <span class="size-detail">200 - 1,000 m&sup2;</span>
-                                </button>
-                                <button class="size-option" data-size="large">
-                                    <span class="size-label">Large</span>
-                                    <span class="size-detail">1,000 - 5,000 m&sup2;</span>
-                                </button>
-                                <button class="size-option" data-size="very-large">
-                                    <span class="size-label">Very Large</span>
-                                    <span class="size-detail">5,000+ m&sup2;</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="requirement-group">
-                            <label>How often do you need cleaning?</label>
-                            <div class="frequency-options">
-                                <button class="freq-option" data-freq="1">1x per week</button>
-                                <button class="freq-option" data-freq="2">2x per week</button>
-                                <button class="freq-option" data-freq="3">3x per week</button>
-                                <button class="freq-option" data-freq="5">5x per week</button>
-                                <button class="freq-option" data-freq="6">6x per week</button>
-                                <button class="freq-option" data-freq="7">Daily (7x)</button>
-                            </div>
-                        </div>
-
-                        <div class="step-nav">
-                            <button class="btn-back" id="back-to-1">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
-                                Back
-                            </button>
-                            <button class="btn-next" id="calc-estimate" disabled>
-                                Calculate Estimate
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
-                            </button>
-                        </div>
+                    <div class="sidebar-card">
+                        <h4>Call Us</h4>
+                        <a href="tel:01392931035" class="sidebar-phone">01392 931035</a>
+                        <p style="margin-top: 8px; font-size: 14px; color: var(--color-secondary);">Monday - Friday, 8am - 6pm</p>
                     </div>
-                </div>
 
-                <!-- Step 3: Results -->
-                <div class="estimator-step" id="step-3">
-                    <div class="estimate-result">
-                        <div class="estimate-header">
-                            <div class="estimate-badge">Your Estimate</div>
-                            <h2 class="estimate-site-type" id="result-site-type"></h2>
-                        </div>
-
-                        <div class="cell-type-banner" id="cell-type-banner">
-                            <div class="cell-type-badge" id="cell-type-badge"></div>
-                            <p class="cell-type-text">Based on your requirements, we believe your site is a <strong id="cell-type-label"></strong></p>
-                        </div>
-
-                        <div class="estimate-price-card">
-                            <p class="estimate-label">Estimated price band</p>
-                            <div class="estimate-price">
-                                <span class="estimate-amount" id="result-weekly"></span>
-                                <span class="estimate-unit">per week</span>
-                            </div>
-                            <p class="estimate-monthly">Approximately <strong id="result-monthly"></strong> per month</p>
-                            <p class="estimate-vat">Excludes VAT. Guide price based on typical requirements.</p>
-
-                            <div class="estimate-details">
-                                <div class="estimate-detail">
-                                    <span class="detail-label">Site size</span>
-                                    <span class="detail-value" id="result-size"></span>
-                                </div>
-                                <div class="estimate-detail">
-                                    <span class="detail-label">Frequency</span>
-                                    <span class="detail-value" id="result-frequency"></span>
-                                </div>
-                                <div class="estimate-detail">
-                                    <span class="detail-label">Estimated hours</span>
-                                    <span class="detail-value" id="result-hours"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="estimate-note">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
-                            <p>This is a guide estimate based on typical requirements. Your final quote may vary following a site survey. All quotes are tailored to your exact needs.</p>
-                        </div>
-
-                        <!-- Contact Form -->
-                        <div class="estimate-form-section">
-                            <h3>Get your full quote</h3>
-                            <p>Leave your details and we'll send a detailed, no-obligation quote.</p>
-
-                            <form id="quote-form" class="quote-form" novalidate>
-                                <!-- Honeypot -->
-                                <div style="position: absolute; left: -9999px;" aria-hidden="true">
-                                    <label for="website">Website</label>
-                                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-                                </div>
-
-                                <!-- Hidden estimator data -->
-                                <input type="hidden" id="est-site-type" name="siteType" value="">
-                                <input type="hidden" id="est-size" name="size" value="">
-                                <input type="hidden" id="est-frequency" name="frequency" value="">
-                                <input type="hidden" id="est-estimate" name="estimate" value="">
-                                <input type="hidden" id="est-hours" name="estimatedHours" value="">
-
-                                <div id="form-messages" class="form-messages"></div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="name">Your Name <span class="required">*</span></label>
-                                        <input type="text" id="name" name="name" required autocomplete="name" placeholder="John Smith">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="company">Company Name</label>
-                                        <input type="text" id="company" name="company" autocomplete="organization" placeholder="Your company">
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="email">Email Address <span class="required">*</span></label>
-                                        <input type="email" id="email" name="email" required autocomplete="email" placeholder="john@company.co.uk">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="phone">Phone Number</label>
-                                        <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="07xxx xxxxxx">
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="message">Anything else we should know?</label>
-                                    <textarea id="message" name="message" rows="3" placeholder="Access details, specific requirements, preferred start date..."></textarea>
-                                </div>
-
-                                <div class="form-submit">
-                                    <button type="submit" class="submit-btn">Get My Full Quote</button>
-                                    <p class="form-note">We typically respond within 24 hours</p>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="step-nav">
-                            <button class="btn-back" id="back-to-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
-                                Adjust Estimate
-                            </button>
-                            <a href="tel:01392931035" class="btn-phone">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
-                                Prefer to talk? 01392 931035
-                            </a>
-                        </div>
+                    <div class="sidebar-card">
+                        <h4>What happens next?</h4>
+                        <ul class="benefits-list">
+                            <li>We'll call to arrange a site visit</li>
+                            <li>We assess your premises in person</li>
+                            <li>You receive a detailed, tailored quote</li>
+                            <li>No obligation at any stage</li>
+                        </ul>
                     </div>
-                </div>
 
+                    <div class="sidebar-card">
+                        <h4>Areas We Serve</h4>
+                        <ul class="benefits-list">
+                            <li>Exeter & surrounding areas</li>
+                            <li>Devon</li>
+                            <li>Cornwall</li>
+                            <li>Somerset</li>
+                        </ul>
+                    </div>
+                </aside>
             </div>
         </div>
     </section>
@@ -365,7 +269,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Signature Cleans Ltd. All rights reserved.</p>
+                <p>&copy; 2026 Signature Cleans Ltd. All rights reserved.</p>
                 <div class="footer-legal">
                     <a href="privacy.html">Privacy</a>
                     <a href="cookies.html">Cookies</a>
@@ -384,6 +288,70 @@
     </footer>
 
     <script src="js/main.js"></script>
-    <script src="js/quote.js"></script>
+    <script>
+    // Quote page form handler
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('quote-form');
+        if (!form) return;
+
+        var submitBtn = form.querySelector('button[type="submit"]');
+        var formMessages = document.getElementById('form-messages');
+
+        // Phone formatting
+        var phoneField = document.getElementById('phone');
+        if (phoneField) {
+            phoneField.addEventListener('input', function(e) {
+                var value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                if (value.startsWith('07') && value.length > 5) {
+                    value = value.slice(0, 5) + ' ' + value.slice(5);
+                } else if (value.startsWith('01') && value.length > 4) {
+                    value = value.slice(0, 4) + ' ' + value.slice(4);
+                }
+                e.target.value = value;
+            });
+        }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (formMessages) {
+                formMessages.innerHTML = '';
+                formMessages.className = 'form-messages';
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            var formData = new FormData(form);
+            var data = Object.fromEntries(formData.entries());
+            data.leadSource = 'website-quote-form';
+
+            try {
+                var response = await fetch('/api/quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                var result = await response.json();
+
+                if (result.success) {
+                    window.location.href = 'thank-you.html';
+                } else {
+                    formMessages.innerHTML = result.errors ? result.errors.join('<br>') : result.error || 'Something went wrong.';
+                    formMessages.className = 'form-messages error';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Book My Free Site Visit';
+                }
+            } catch (error) {
+                formMessages.innerHTML = 'Unable to submit form. Please try again.';
+                formMessages.className = 'form-messages error';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Book My Free Site Visit';
+            }
+        });
+    });
+    </script>
 </body>
 </html>

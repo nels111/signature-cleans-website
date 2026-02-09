@@ -870,3 +870,226 @@
         width: 30px;
     }
 }
+
+/* ============================================
+   QUOTE PAGE — OPTIONS & FORM SECTIONS
+   ============================================ */
+
+.quote-options-section {
+    padding: var(--space-lg) 0;
+    background: var(--color-background);
+}
+
+.quote-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.quote-option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--color-background);
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 40px 30px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.quote-option-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 30px rgba(37, 99, 235, 0.12);
+    transform: translateY(-4px);
+}
+
+.quote-option-card.featured {
+    border-color: var(--color-accent);
+    background: rgba(37, 99, 235, 0.02);
+}
+
+.quote-option-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--color-surface);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.quote-option-card:hover .quote-option-icon,
+.quote-option-card.featured .quote-option-icon {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.quote-option-icon svg {
+    width: 32px;
+    height: 32px;
+    color: var(--color-accent);
+}
+
+.quote-option-card h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+}
+
+.quote-option-card p {
+    font-size: 0.9375rem;
+    color: var(--color-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.quote-option-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    transition: gap 0.2s ease;
+}
+
+.quote-option-card:hover .quote-option-cta {
+    gap: 12px;
+}
+
+/* Form Section */
+.quote-form-section {
+    padding: var(--space-xl) 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+}
+
+.quote-form-section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-xs);
+}
+
+.form-intro {
+    color: var(--color-secondary);
+    font-size: 1rem;
+    margin-bottom: var(--space-lg);
+    line-height: 1.6;
+}
+
+.quote-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-xl);
+    align-items: start;
+}
+
+.quote-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-card {
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.sidebar-card.highlight {
+    border-color: var(--color-accent);
+    background: rgba(37, 99, 235, 0.03);
+}
+
+.sidebar-card h4 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sidebar-card p {
+    font-size: 0.875rem;
+    color: var(--color-secondary);
+    line-height: 1.5;
+}
+
+.sidebar-phone {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+}
+
+.benefits-list li {
+    font-size: 0.875rem;
+    color: var(--color-secondary);
+    padding: 6px 0 6px 20px;
+    position: relative;
+}
+
+.benefits-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    opacity: 0.5;
+}
+
+/* Select styling */
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-background);
+    color: var(--color-primary);
+    transition: all var(--transition-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+@media (max-width: 768px) {
+    .quote-options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quote-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quote-option-card {
+        padding: 30px 24px;
+    }
+}
