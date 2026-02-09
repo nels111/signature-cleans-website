@@ -219,8 +219,69 @@ function validateContact(data) {
 }
 
 // ============================================
+// QUOTE ESTIMATOR CONFIG
+// Adjust these values to tune website estimates
+// ============================================
+const ESTIMATOR_CONFIG = {
+  hourlyRate: 17,
+  margin: 0.40,
+  weeksPerMonth: 4.33,
+
+  // Hours per day by site size
+  sizeToHours: {
+    'small':      1.5,   // Under 2,000 sq ft
+    'medium':     3,     // 2,000 - 10,000 sq ft
+    'large':      6,     // 10,000 - 50,000 sq ft
+    'very-large': 10     // 50,000+ sq ft
+  },
+
+  // Range spread: shows estimate ± this percentage (e.g. 0.15 = ±15%)
+  rangeSpread: 0.15
+};
+
+// ============================================
 // API ROUTES
 // ============================================
+
+// Estimate endpoint - calculates price server-side
+app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 30 }), (req, res) => {
+  try {
+    const { siteType, size, frequency } = req.body;
+    const freq = parseInt(frequency);
+
+    if (!size || !freq || freq < 1 || freq > 7) {
+      return res.status(400).json({ success: false, error: 'Invalid input' });
+    }
+
+    const hours = ESTIMATOR_CONFIG.sizeToHours[size];
+    if (!hours) {
+      return res.status(400).json({ success: false, error: 'Invalid size' });
+    }
+
+    // Core formula: (hours x rate x frequency) / (1 - margin) x weeksPerMonth
+    const weeklyCharge = (hours * ESTIMATOR_CONFIG.hourlyRate * freq) / (1 - ESTIMATOR_CONFIG.margin);
+    const monthlyTotal = Math.round(weeklyCharge * ESTIMATOR_CONFIG.weeksPerMonth);
+
+    // Calculate a range for the visitor
+    const spread = ESTIMATOR_CONFIG.rangeSpread;
+    const low = Math.round(monthlyTotal * (1 - spread) / 10) * 10;   // round to nearest £10
+    const high = Math.round(monthlyTotal * (1 + spread) / 10) * 10;
+
+    res.json({
+      success: true,
+      estimate: {
+        low: low,
+        high: high,
+        hoursPerDay: hours,
+        hoursPerWeek: Math.round(hours * freq * 10) / 10
+      }
+    });
+  } catch (error) {
+    console.error('Estimate error:', error);
+    res.status(500).json({ success: false, error: 'Calculation failed' });
+  }
+});
+
 app.post('/api/quote', formLimiter, async (req, res) => {
   try {
     const errors = validateQuote(req.body);

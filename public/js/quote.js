@@ -1,50 +1,16 @@
 /**
  * Signature Cleans - Quote Estimator
- * Pricing logic adapted from internal quote calculator.
- * Provides instant guide estimates for website visitors.
+ * Collects visitor inputs and calls server-side API for pricing.
+ * No pricing logic in the browser.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
 
     // ========================================
-    // PRICING CONFIGURATION
-    // (Aligned with internal quote calculator)
+    // DISPLAY LABELS
     // ========================================
 
-    const HOURLY_RATE = 17;
-    const WEEKS_PER_MONTH = 4.33;
-    const DEFAULT_MARGIN = 0.40;
-
-    // Hours per day mapped by site size
-    const SIZE_TO_HOURS = {
-        'small':      1.5,
-        'medium':     3,
-        'large':      6,
-        'very-large': 10
-    };
-
-    // Site type multipliers - some environments need more intensive cleaning
-    const SITE_TYPE_MULTIPLIERS = {
-        'Office/Commercial':      1.0,
-        'Welfare/Construction':   1.15,
-        'Hospitality/Venue':      1.2,
-        'Education/Institutional': 1.0,
-        'Specialist/Industrial':  1.1,
-        'Dental/Medical':         1.3
-    };
-
-    // Estimated weekly product + overhead costs by site type
-    const SITE_TYPE_EXTRAS = {
-        'Office/Commercial':      15,
-        'Welfare/Construction':   25,
-        'Hospitality/Venue':      20,
-        'Education/Institutional': 15,
-        'Specialist/Industrial':  20,
-        'Dental/Medical':         30
-    };
-
-    // Display labels
-    const SIZE_LABELS = {
+    var SIZE_LABELS = {
         'small':      'Small (under 2,000 sq ft)',
         'medium':     'Medium (2,000 - 10,000 sq ft)',
         'large':      'Large (10,000 - 50,000 sq ft)',
@@ -55,76 +21,72 @@ document.addEventListener('DOMContentLoaded', function() {
     // STATE
     // ========================================
 
-    let selectedSiteType = null;
-    let selectedSize = null;
-    let selectedFrequency = null;
-    let currentStep = 1;
+    var selectedSiteType = null;
+    var selectedSize = null;
+    var selectedFrequency = null;
+    var currentStep = 1;
 
     // ========================================
     // DOM ELEMENTS
     // ========================================
 
-    const steps = {
+    var steps = {
         1: document.getElementById('step-1'),
         2: document.getElementById('step-2'),
         3: document.getElementById('step-3')
     };
 
-    const progressSteps = document.querySelectorAll('.progress-step');
-    const progressLines = {
+    var progressSteps = document.querySelectorAll('.progress-step');
+    var progressLines = {
         1: document.getElementById('progress-line-1'),
         2: document.getElementById('progress-line-2')
     };
 
-    const siteTypeCards = document.querySelectorAll('.site-type-card');
-    const sizeOptions = document.querySelectorAll('.size-option');
-    const freqOptions = document.querySelectorAll('.freq-option');
-    const calcBtn = document.getElementById('calc-estimate');
-    const backTo1 = document.getElementById('back-to-1');
-    const backTo2 = document.getElementById('back-to-2');
+    var siteTypeCards = document.querySelectorAll('.site-type-card');
+    var sizeOptions = document.querySelectorAll('.size-option');
+    var freqOptions = document.querySelectorAll('.freq-option');
+    var calcBtn = document.getElementById('calc-estimate');
+    var backTo1 = document.getElementById('back-to-1');
+    var backTo2 = document.getElementById('back-to-2');
 
     // Result elements
-    const resultSiteType = document.getElementById('result-site-type');
-    const resultAmount = document.getElementById('result-amount');
-    const resultSize = document.getElementById('result-size');
-    const resultFrequency = document.getElementById('result-frequency');
-    const resultHours = document.getElementById('result-hours');
+    var resultSiteType = document.getElementById('result-site-type');
+    var resultAmount = document.getElementById('result-amount');
+    var resultSize = document.getElementById('result-size');
+    var resultFrequency = document.getElementById('result-frequency');
+    var resultHours = document.getElementById('result-hours');
 
     // Hidden form fields
-    const estSiteType = document.getElementById('est-site-type');
-    const estSize = document.getElementById('est-size');
-    const estFrequency = document.getElementById('est-frequency');
-    const estEstimate = document.getElementById('est-estimate');
-    const estHours = document.getElementById('est-hours');
+    var estSiteType = document.getElementById('est-site-type');
+    var estSize = document.getElementById('est-size');
+    var estFrequency = document.getElementById('est-frequency');
+    var estEstimate = document.getElementById('est-estimate');
+    var estHours = document.getElementById('est-hours');
 
     // Form elements
-    const form = document.getElementById('quote-form');
-    const formMessages = document.getElementById('form-messages');
+    var form = document.getElementById('quote-form');
+    var formMessages = document.getElementById('form-messages');
 
     // ========================================
     // STEP NAVIGATION
     // ========================================
 
     function goToStep(step) {
-        // Hide current step
         if (steps[currentStep]) {
             steps[currentStep].classList.remove('active');
         }
 
-        // Show target step
         currentStep = step;
         if (steps[currentStep]) {
             steps[currentStep].classList.add('active');
         }
 
-        // Update progress bar
         progressSteps.forEach(function(el) {
             var s = parseInt(el.dataset.step);
             el.classList.toggle('active', s <= step);
             el.classList.toggle('completed', s < step);
         });
 
-        // Animate progress lines
         if (progressLines[1]) {
             progressLines[1].style.width = step >= 2 ? '100%' : '0%';
         }
@@ -132,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
             progressLines[2].style.width = step >= 3 ? '100%' : '0%';
         }
 
-        // Scroll to top of estimator
         var estimator = document.querySelector('.estimator-container');
         if (estimator) {
             estimator.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -145,14 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     siteTypeCards.forEach(function(card) {
         card.addEventListener('click', function() {
-            // Deselect others
             siteTypeCards.forEach(function(c) { c.classList.remove('selected'); });
-
-            // Select this one
             card.classList.add('selected');
             selectedSiteType = card.dataset.type;
 
-            // Auto-advance to step 2 after a short delay
             setTimeout(function() {
                 goToStep(2);
             }, 300);
@@ -187,78 +144,65 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Back button
     if (backTo1) {
-        backTo1.addEventListener('click', function() {
-            goToStep(1);
-        });
+        backTo1.addEventListener('click', function() { goToStep(1); });
     }
 
-    // Calculate button
     if (calcBtn) {
-        calcBtn.addEventListener('click', function() {
-            calculateAndShowEstimate();
-        });
+        calcBtn.addEventListener('click', function() { fetchEstimate(); });
     }
 
-    // Back to step 2 from results
     if (backTo2) {
-        backTo2.addEventListener('click', function() {
-            goToStep(2);
-        });
+        backTo2.addEventListener('click', function() { goToStep(2); });
     }
 
     // ========================================
-    // CALCULATION ENGINE
-    // (Same formula as internal n8n workflow)
+    // SERVER-SIDE ESTIMATE
     // ========================================
 
-    function calculateEstimate() {
-        var baseHours = SIZE_TO_HOURS[selectedSize] || 3;
-        var multiplier = SITE_TYPE_MULTIPLIERS[selectedSiteType] || 1.0;
-        var extras = SITE_TYPE_EXTRAS[selectedSiteType] || 15;
+    async function fetchEstimate() {
+        calcBtn.disabled = true;
+        calcBtn.textContent = 'Calculating...';
 
-        // Apply site type multiplier to hours
-        var hoursPerDay = baseHours * multiplier;
+        try {
+            var response = await fetch('/api/estimate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    siteType: selectedSiteType,
+                    size: selectedSize,
+                    frequency: selectedFrequency
+                })
+            });
 
-        // Core formula from n8n Quote Calculator:
-        // weeklyLabourCost = hoursPerDay * hourlyRate * frequency
-        var weeklyLabourCost = hoursPerDay * HOURLY_RATE * selectedFrequency;
+            var data = await response.json();
 
-        // totalWeeklySpend = weeklyLabourCost + productCost + overheadCost
-        var totalWeeklySpend = weeklyLabourCost + extras;
+            if (data.success) {
+                showEstimate(data.estimate);
+            } else {
+                alert('Unable to calculate estimate. Please try again.');
+            }
+        } catch (err) {
+            alert('Something went wrong. Please try again.');
+        }
 
-        // weeklyCharge = totalWeeklySpend / (1 - marginPercent)
-        var weeklyCharge = totalWeeklySpend / (1 - DEFAULT_MARGIN);
-
-        // monthlyTotal = round(weeklyCharge * weeksPerMonth)
-        var monthlyTotal = Math.round(weeklyCharge * WEEKS_PER_MONTH);
-
-        return {
-            monthlyTotal: monthlyTotal,
-            hoursPerDay: Math.round(hoursPerDay * 10) / 10,
-            hoursPerWeek: Math.round(hoursPerDay * selectedFrequency * 10) / 10
-        };
+        calcBtn.disabled = false;
+        calcBtn.textContent = 'Calculate Estimate';
     }
 
-    function calculateAndShowEstimate() {
-        var result = calculateEstimate();
-
-        // Populate results
+    function showEstimate(estimate) {
         resultSiteType.textContent = selectedSiteType + ' Cleaning';
-        resultAmount.textContent = '\u00A3' + result.monthlyTotal.toLocaleString('en-GB');
+        resultAmount.textContent = '\u00A3' + estimate.low.toLocaleString('en-GB') + ' \u2013 \u00A3' + estimate.high.toLocaleString('en-GB');
         resultSize.textContent = SIZE_LABELS[selectedSize] || selectedSize;
         resultFrequency.textContent = selectedFrequency + 'x per week';
-        resultHours.textContent = result.hoursPerDay + ' hrs/day (' + result.hoursPerWeek + ' hrs/week)';
+        resultHours.textContent = estimate.hoursPerDay + ' hrs/day (' + estimate.hoursPerWeek + ' hrs/week)';
 
-        // Populate hidden form fields
         estSiteType.value = selectedSiteType;
         estSize.value = selectedSize;
         estFrequency.value = selectedFrequency;
-        estEstimate.value = result.monthlyTotal;
-        estHours.value = result.hoursPerDay;
+        estEstimate.value = estimate.low + '-' + estimate.high;
+        estHours.value = estimate.hoursPerDay;
 
-        // Go to results step
         goToStep(3);
     }
 
@@ -266,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // FORM SUBMISSION
     // ========================================
 
-    // Format phone number as user types
     var phoneField = document.getElementById('phone');
     if (phoneField) {
         phoneField.addEventListener('input', function(e) {
@@ -299,7 +242,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var formData = new FormData(form);
             var data = Object.fromEntries(formData.entries());
 
-            // Map sector from site type for backend compatibility
             var siteTypeToSector = {
                 'Office/Commercial': 'office',
                 'Dental/Medical': 'medical',
