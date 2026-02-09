@@ -107,12 +107,12 @@
     opacity: 1;
 }
 .logo-item img {
-    height: 40px;
+    height: 45px;
     width: auto;
-    max-width: 150px;
+    max-width: 160px;
     object-fit: contain;
     filter: grayscale(100%) opacity(0.7);
-    transition: filter 0.3s ease;
+    transition: filter 0.4s ease;
 }
 .logo-item:hover img {
     filter: grayscale(0%) opacity(1);
@@ -742,6 +742,24 @@ a {
 .cta-button:hover {
     background: var(--color-accent-hover);
     transform: scale(1.02);
+}
+
+.cta-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-button-secondary {
+    background: transparent;
+    color: var(--color-accent);
+    border: 2px solid var(--color-accent);
+}
+
+.cta-button-secondary:hover {
+    background: var(--color-accent);
+    color: var(--color-background);
 }
 
 /* ============================================

@@ -1,3 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 40">
-  <text x="90" y="28" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" letter-spacing="2" fill="#1a1a1a">BOUYGUES UK</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50">
+  <defs>
+    <linearGradient id="bouygues-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e65100"/>
+      <stop offset="100%" stop-color="#ff6d00"/>
+    </linearGradient>
+  </defs>
+  <!-- Oval shape -->
+  <ellipse cx="30" cy="25" rx="22" ry="18" fill="none" stroke="url(#bouygues-grad)" stroke-width="3.5"/>
+  <!-- Company name -->
+  <text x="62" y="24" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="1.5" fill="#1a1a1a">BOUYGUES</text>
+  <text x="62" y="38" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" letter-spacing="3" fill="#00897b">UK</text>
 </svg>

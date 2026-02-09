@@ -1,3 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 40">
-  <text x="90" y="28" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="5" fill="#1a1a1a">VISTRY</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 50">
+  <defs>
+    <linearGradient id="vistry-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1565c0"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
+    </linearGradient>
+  </defs>
+  <!-- V mark -->
+  <path d="M10 12 L22 38 L34 12" fill="none" stroke="url(#vistry-grad)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- VISTRY text -->
+  <text x="45" y="32" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="4" fill="#0d47a1">VISTRY</text>
 </svg>
