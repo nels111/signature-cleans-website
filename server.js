@@ -137,7 +137,7 @@ async function sendNotificationEmail(submission) {
       ${submission.sector ? `<div class="field"><div class="label">Sector</div><div class="value">${submission.sector}</div></div>` : ''}
       ${submission.size ? `<div class="field"><div class="label">Size</div><div class="value">${submission.size}</div></div>` : ''}
       ${submission.frequency ? `<div class="field"><div class="label">Frequency</div><div class="value">${submission.frequency}</div></div>` : ''}
-      ${submission.estimate ? `<div class="field"><div class="label">Website Estimate</div><div class="value" style="font-size:18px;font-weight:bold;color:#2563eb;">&pound;${submission.estimate} pcm</div></div>` : ''}
+      ${submission.estimate ? `<div class="field"><div class="label">Website Estimate</div><div class="value" style="font-size:18px;font-weight:bold;color:#2563eb;">&pound;${submission.estimate}</div></div>` : ''}
       ${submission.estimatedHours ? `<div class="field"><div class="label">Estimated Hours/Day</div><div class="value">${submission.estimatedHours}</div></div>` : ''}
       ${submission.leadSource ? `<div class="field"><div class="label">Lead Source</div><div class="value">${submission.leadSource}</div></div>` : ''}
       ${submission.message ? `<div class="message-box"><div class="label">Message</div><div class="value">${submission.message.replace(/\n/g, '<br>')}</div></div>` : ''}
@@ -219,31 +219,42 @@ function validateContact(data) {
 }
 
 // ============================================
-// QUOTE ESTIMATOR CONFIG
-// Adjust these values to tune website estimates
+// QUOTE ESTIMATOR CONFIG — Price Bands Framework
+// Based on client billing rates, NOT internal costs.
 // ============================================
 const ESTIMATOR_CONFIG = {
-  hourlyRate: 17,
-  margin: 0.40,
+  // Client-facing billing rates (£/hr)
+  billingRateLow:  25,    // Floor rate — never quote below this
+  billingRateHigh: 27,    // Target rate
+
   weeksPerMonth: 4.33,
 
-  // Hours per day by site size
-  sizeToHours: {
-    'small':      1.5,   // Under 2,000 sq ft
-    'medium':     3,     // 2,000 - 10,000 sq ft
-    'large':      6,     // 10,000 - 50,000 sq ft
-    'very-large': 10     // 50,000+ sq ft
+  // Approximate hours per cleaning visit by site size
+  // Derived from ~500 sq ft / hr general office rule
+  sizeToHoursPerDay: {
+    'small':      1.5,    // Under 2,000 sq ft
+    'medium':     3,      // 2,000 – 10,000 sq ft
+    'large':      6,      // 10,000 – 50,000 sq ft
+    'very-large': 12      // 50,000+ sq ft
   },
 
-  // Range spread: shows estimate ± this percentage (e.g. 0.15 = ±15%)
-  rangeSpread: 0.15
+  // Scope-tier multiplier by site type
+  // Standard = 1.0, Enhanced (+10-15%), Heavy (+20-30%)
+  scopeMultiplier: {
+    'Office/Commercial':      1.0,    // Standard scope
+    'Education/Institutional': 1.0,   // Standard scope
+    'Dental/Medical':          1.12,  // Enhanced — clinical areas
+    'Hospitality/Venue':       1.12,  // Enhanced — front-of-house standards
+    'Welfare/Construction':    1.15,  // Enhanced — welfare regs
+    'Specialist/Industrial':   1.25   // Heavy — industrial / specialist
+  }
 };
 
 // ============================================
 // API ROUTES
 // ============================================
 
-// Estimate endpoint - calculates price server-side
+// Estimate endpoint — Price Bands calculation
 app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 30 }), (req, res) => {
   try {
     const { siteType, size, frequency } = req.body;
@@ -253,27 +264,37 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 30 }), (req, res) =>
       return res.status(400).json({ success: false, error: 'Invalid input' });
     }
 
-    const hours = ESTIMATOR_CONFIG.sizeToHours[size];
-    if (!hours) {
+    const baseHours = ESTIMATOR_CONFIG.sizeToHoursPerDay[size];
+    if (!baseHours) {
       return res.status(400).json({ success: false, error: 'Invalid size' });
     }
 
-    // Core formula: (hours x rate x frequency) / (1 - margin) x weeksPerMonth
-    const weeklyCharge = (hours * ESTIMATOR_CONFIG.hourlyRate * freq) / (1 - ESTIMATOR_CONFIG.margin);
-    const monthlyTotal = Math.round(weeklyCharge * ESTIMATOR_CONFIG.weeksPerMonth);
+    // Apply scope multiplier for site type (Enhanced / Heavy sites need more hours)
+    const scopeMult = ESTIMATOR_CONFIG.scopeMultiplier[siteType] || 1.0;
+    const hoursPerDay = Math.round(baseHours * scopeMult * 10) / 10;
+    const hoursPerWeek = Math.round(hoursPerDay * freq * 10) / 10;
 
-    // Calculate a range for the visitor
-    const spread = ESTIMATOR_CONFIG.rangeSpread;
-    const low = Math.round(monthlyTotal * (1 - spread) / 10) * 10;   // round to nearest £10
-    const high = Math.round(monthlyTotal * (1 + spread) / 10) * 10;
+    // Weekly charge: hours × billing rate
+    const weeklyLow  = hoursPerWeek * ESTIMATOR_CONFIG.billingRateLow;
+    const weeklyHigh = hoursPerWeek * ESTIMATOR_CONFIG.billingRateHigh;
+
+    // Monthly charge: weekly × 4.33, rounded to nearest £10
+    const monthlyLow  = Math.round(weeklyLow  * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+    const monthlyHigh = Math.round(weeklyHigh * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+
+    // Round weekly to nearest £5
+    const weeklyLowRounded  = Math.round(weeklyLow  / 5) * 5;
+    const weeklyHighRounded = Math.round(weeklyHigh / 5) * 5;
 
     res.json({
       success: true,
       estimate: {
-        low: low,
-        high: high,
-        hoursPerDay: hours,
-        hoursPerWeek: Math.round(hours * freq * 10) / 10
+        weeklyLow:  weeklyLowRounded,
+        weeklyHigh: weeklyHighRounded,
+        monthlyLow:  monthlyLow,
+        monthlyHigh: monthlyHigh,
+        hoursPerDay: hoursPerDay,
+        hoursPerWeek: hoursPerWeek
       }
     });
   } catch (error) {
@@ -458,7 +479,7 @@ app.get('/admin', adminAuth, (req, res) => {
           <td>${s.phone ? `<a href="tel:${s.phone}">${s.phone}</a>` : '-'}</td>
           <td>${s.company || '-'}</td>
           <td>${s.serviceType || '-'}</td>
-          <td>${s.estimate ? `<strong>&pound;${s.estimate} pcm</strong>` : '-'}</td>
+          <td>${s.estimate ? `<strong>&pound;${s.estimate}</strong>` : '-'}</td>
           <td class="detail">${s.message || s.sector || '-'}</td>
         </tr>`).join('')}
       </tbody>

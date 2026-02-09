@@ -51,7 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Result elements
     var resultSiteType = document.getElementById('result-site-type');
-    var resultAmount = document.getElementById('result-amount');
+    var resultWeekly = document.getElementById('result-weekly');
+    var resultMonthly = document.getElementById('result-monthly');
     var resultSize = document.getElementById('result-size');
     var resultFrequency = document.getElementById('result-frequency');
     var resultHours = document.getElementById('result-hours');
@@ -192,15 +193,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showEstimate(estimate) {
         resultSiteType.textContent = selectedSiteType + ' Cleaning';
-        resultAmount.textContent = '\u00A3' + estimate.low.toLocaleString('en-GB') + ' \u2013 \u00A3' + estimate.high.toLocaleString('en-GB');
+
+        // Weekly price range (primary)
+        resultWeekly.textContent = '\u00A3' + estimate.weeklyLow.toLocaleString('en-GB') + ' \u2013 \u00A3' + estimate.weeklyHigh.toLocaleString('en-GB');
+
+        // Monthly approximation
+        resultMonthly.textContent = '\u00A3' + estimate.monthlyLow.toLocaleString('en-GB') + ' \u2013 \u00A3' + estimate.monthlyHigh.toLocaleString('en-GB');
+
         resultSize.textContent = SIZE_LABELS[selectedSize] || selectedSize;
         resultFrequency.textContent = selectedFrequency + 'x per week';
         resultHours.textContent = estimate.hoursPerDay + ' hrs/day (' + estimate.hoursPerWeek + ' hrs/week)';
 
+        // Hidden form fields
         estSiteType.value = selectedSiteType;
         estSize.value = selectedSize;
         estFrequency.value = selectedFrequency;
-        estEstimate.value = estimate.low + '-' + estimate.high;
+        estEstimate.value = estimate.weeklyLow + '-' + estimate.weeklyHigh + '/wk';
         estHours.value = estimate.hoursPerDay;
 
         goToStep(3);

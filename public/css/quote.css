@@ -464,6 +464,17 @@
     font-weight: 400;
 }
 
+.estimate-monthly {
+    font-size: 0.9375rem;
+    color: var(--color-secondary);
+    margin-bottom: 8px;
+}
+
+.estimate-monthly strong {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
 .estimate-vat {
     font-size: 0.8125rem;
     color: var(--color-secondary);
