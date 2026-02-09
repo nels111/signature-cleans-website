@@ -423,6 +423,57 @@
     letter-spacing: -0.02em;
 }
 
+/* Cell Type Banner */
+.cell-type-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-bottom: var(--space-md);
+}
+
+.cell-type-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.cell-type-banner.cell-type-a .cell-type-badge {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.cell-type-banner.cell-type-b .cell-type-badge {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.cell-type-banner.cell-type-c .cell-type-badge {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.cell-type-text {
+    font-size: 0.9375rem;
+    color: var(--color-secondary);
+    line-height: 1.5;
+}
+
+.cell-type-text strong {
+    color: var(--color-primary);
+}
+
 /* Price Card */
 .estimate-price-card {
     background: var(--color-surface);

@@ -51,6 +51,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Result elements
     var resultSiteType = document.getElementById('result-site-type');
+    var cellTypeBanner = document.getElementById('cell-type-banner');
+    var cellTypeBadge = document.getElementById('cell-type-badge');
+    var cellTypeLabel = document.getElementById('cell-type-label');
     var resultWeekly = document.getElementById('result-weekly');
     var resultMonthly = document.getElementById('result-monthly');
     var resultSize = document.getElementById('result-size');
@@ -193,6 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showEstimate(estimate) {
         resultSiteType.textContent = selectedSiteType + ' Cleaning';
+
+        // Cell Type classification
+        cellTypeBadge.textContent = 'Cell Type ' + estimate.cellType;
+        cellTypeLabel.textContent = 'Cell Type ' + estimate.cellType + ' \u2014 ' + estimate.cellLabel;
+        cellTypeBanner.className = 'cell-type-banner cell-type-' + estimate.cellType.toLowerCase();
 
         // Weekly price range (primary)
         resultWeekly.textContent = '\u00A3' + estimate.weeklyLow.toLocaleString('en-GB') + ' \u2013 \u00A3' + estimate.weeklyHigh.toLocaleString('en-GB');

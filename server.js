@@ -286,9 +286,24 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 30 }), (req, res) =>
     const weeklyLowRounded  = Math.round(weeklyLow  / 5) * 5;
     const weeklyHighRounded = Math.round(weeklyHigh / 5) * 5;
 
+    // Classify into Cell Type based on weekly hours
+    let cellType, cellLabel;
+    if (hoursPerWeek <= 15) {
+      cellType = 'A';
+      cellLabel = 'Small Site';
+    } else if (hoursPerWeek <= 30) {
+      cellType = 'B';
+      cellLabel = 'Medium Site';
+    } else {
+      cellType = 'C';
+      cellLabel = 'Large Site';
+    }
+
     res.json({
       success: true,
       estimate: {
+        cellType: cellType,
+        cellLabel: cellLabel,
         weeklyLow:  weeklyLowRounded,
         weeklyHigh: weeklyHighRounded,
         monthlyLow:  monthlyLow,
