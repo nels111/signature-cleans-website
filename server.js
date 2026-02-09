@@ -213,22 +213,23 @@ function validateContact(data) {
 
 // ============================================
 // QUOTE ESTIMATOR CONFIG — Price Bands Framework
-// Based on client billing rates, NOT internal costs.
+// Uses broad hours RANGES per site size to produce wide price bands.
+// No hourly rate or hours exposed to visitor.
 // ============================================
 const ESTIMATOR_CONFIG = {
-  // Client-facing billing rates (£/hr)
+  // Client-facing billing rates (£/hr) — used server-side only
   billingRateLow:  25,    // Floor rate — never quote below this
   billingRateHigh: 27,    // Target rate
 
   weeksPerMonth: 4.33,
 
-  // Approximate hours per cleaning visit by site size
-  // Derived from ~50 m² / hr general office rule
-  sizeToHoursPerDay: {
-    'small':      1.5,    // Under 200 m²
-    'medium':     3,      // 200 – 1,000 m²
-    'large':      6,      // 1,000 – 5,000 m²
-    'very-large': 12      // 5,000+ m²
+  // Hours per VISIT range [low, high] by site size
+  // Wide ranges account for varied scope within each size band
+  sizeToHoursRange: {
+    'small':      [1, 3],     // Under 200 m²
+    'medium':     [2, 6],     // 200 – 1,000 m²
+    'large':      [3, 10],    // 1,000 – 5,000 m²
+    'very-large': [6, 20]     // 5,000+ m²
   },
 
   // Scope-tier multiplier by site type
@@ -247,7 +248,7 @@ const ESTIMATOR_CONFIG = {
 // API ROUTES
 // ============================================
 
-// Estimate endpoint — Price Bands calculation
+// Estimate endpoint — Broad Price Bands calculation
 app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
   try {
     const { siteType, size, frequency } = req.body;
@@ -257,34 +258,39 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
       return res.status(400).json({ success: false, error: 'Invalid input' });
     }
 
-    const baseHours = ESTIMATOR_CONFIG.sizeToHoursPerDay[size];
-    if (!baseHours) {
+    const hoursRange = ESTIMATOR_CONFIG.sizeToHoursRange[size];
+    if (!hoursRange) {
       return res.status(400).json({ success: false, error: 'Invalid size' });
     }
 
-    // Apply scope multiplier for site type (Enhanced / Heavy sites need more hours)
+    // Apply scope multiplier (Enhanced / Heavy sites need more hours)
     const scopeMult = ESTIMATOR_CONFIG.scopeMultiplier[siteType] || 1.0;
-    const hoursPerDay = Math.round(baseHours * scopeMult * 10) / 10;
-    const hoursPerWeek = Math.round(hoursPerDay * freq * 10) / 10;
+    const hoursLowPerVisit  = hoursRange[0] * scopeMult;
+    const hoursHighPerVisit = hoursRange[1] * scopeMult;
 
-    // Weekly charge: hours × billing rate
-    const weeklyLow  = hoursPerWeek * ESTIMATOR_CONFIG.billingRateLow;
-    const weeklyHigh = hoursPerWeek * ESTIMATOR_CONFIG.billingRateHigh;
+    // Weekly hours range
+    const weeklyHoursLow  = hoursLowPerVisit * freq;
+    const weeklyHoursHigh = hoursHighPerVisit * freq;
 
-    // Monthly charge: weekly × 4.33, rounded to nearest £10
-    const monthlyLow  = Math.round(weeklyLow  * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
-    const monthlyHigh = Math.round(weeklyHigh * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+    // Weekly charge: low hours × low rate, high hours × high rate
+    const weeklyLow  = weeklyHoursLow  * ESTIMATOR_CONFIG.billingRateLow;
+    const weeklyHigh = weeklyHoursHigh * ESTIMATOR_CONFIG.billingRateHigh;
 
     // Round weekly to nearest £5
     const weeklyLowRounded  = Math.round(weeklyLow  / 5) * 5;
     const weeklyHighRounded = Math.round(weeklyHigh / 5) * 5;
 
-    // Classify into Cell Type based on weekly hours
+    // Monthly charge: weekly × 4.33, rounded to nearest £10
+    const monthlyLow  = Math.round(weeklyLowRounded  * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+    const monthlyHigh = Math.round(weeklyHighRounded * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+
+    // Classify into Cell Type based on midpoint of weekly hours range
+    const weeklyHoursMid = (weeklyHoursLow + weeklyHoursHigh) / 2;
     let cellType, cellLabel;
-    if (hoursPerWeek <= 15) {
+    if (weeklyHoursMid <= 15) {
       cellType = 'A';
       cellLabel = 'Small Site';
-    } else if (hoursPerWeek <= 30) {
+    } else if (weeklyHoursMid <= 30) {
       cellType = 'B';
       cellLabel = 'Medium Site';
     } else {
@@ -300,9 +306,7 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
         weeklyLow:  weeklyLowRounded,
         weeklyHigh: weeklyHighRounded,
         monthlyLow:  monthlyLow,
-        monthlyHigh: monthlyHigh,
-        hoursPerDay: hoursPerDay,
-        hoursPerWeek: hoursPerWeek
+        monthlyHigh: monthlyHigh
       }
     });
   } catch (error) {

@@ -58,14 +58,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var resultMonthly = document.getElementById('result-monthly');
     var resultSize = document.getElementById('result-size');
     var resultFrequency = document.getElementById('result-frequency');
-    var resultHours = document.getElementById('result-hours');
 
     // Hidden form fields
     var estSiteType = document.getElementById('est-site-type');
     var estSize = document.getElementById('est-size');
     var estFrequency = document.getElementById('est-frequency');
     var estEstimate = document.getElementById('est-estimate');
-    var estHours = document.getElementById('est-hours');
 
     // Form elements
     var form = document.getElementById('quote-form');
@@ -210,14 +208,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         resultSize.textContent = SIZE_LABELS[selectedSize] || selectedSize;
         resultFrequency.textContent = selectedFrequency + 'x per week';
-        resultHours.textContent = estimate.hoursPerDay + ' hrs/day (' + estimate.hoursPerWeek + ' hrs/week)';
 
         // Hidden form fields
         estSiteType.value = selectedSiteType;
         estSize.value = selectedSize;
         estFrequency.value = selectedFrequency;
         estEstimate.value = estimate.weeklyLow + '-' + estimate.weeklyHigh + '/wk';
-        estHours.value = estimate.hoursPerDay;
 
         goToStep(3);
     }
