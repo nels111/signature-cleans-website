@@ -49,10 +49,20 @@ db.exec(`
     size TEXT,
     sector TEXT,
     leadSource TEXT,
+    estimate TEXT,
+    estimatedHours TEXT,
     ip TEXT,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )
 `);
+
+// Add estimate columns if they don't exist (migration for existing databases)
+try {
+  db.exec(`ALTER TABLE submissions ADD COLUMN estimate TEXT`);
+} catch (e) { /* column already exists */ }
+try {
+  db.exec(`ALTER TABLE submissions ADD COLUMN estimatedHours TEXT`);
+} catch (e) { /* column already exists */ }
 
 // ============================================
 // EMAIL CONFIGURATION
@@ -127,6 +137,8 @@ async function sendNotificationEmail(submission) {
       ${submission.sector ? `<div class="field"><div class="label">Sector</div><div class="value">${submission.sector}</div></div>` : ''}
       ${submission.size ? `<div class="field"><div class="label">Size</div><div class="value">${submission.size}</div></div>` : ''}
       ${submission.frequency ? `<div class="field"><div class="label">Frequency</div><div class="value">${submission.frequency}</div></div>` : ''}
+      ${submission.estimate ? `<div class="field"><div class="label">Website Estimate</div><div class="value" style="font-size:18px;font-weight:bold;color:#2563eb;">&pound;${submission.estimate} pcm</div></div>` : ''}
+      ${submission.estimatedHours ? `<div class="field"><div class="label">Estimated Hours/Day</div><div class="value">${submission.estimatedHours}</div></div>` : ''}
       ${submission.leadSource ? `<div class="field"><div class="label">Lead Source</div><div class="value">${submission.leadSource}</div></div>` : ''}
       ${submission.message ? `<div class="message-box"><div class="label">Message</div><div class="value">${submission.message.replace(/\n/g, '<br>')}</div></div>` : ''}
       <div class="footer">
@@ -228,16 +240,19 @@ app.post('/api/quote', formLimiter, async (req, res) => {
       size: sanitize(req.body.size),
       sector: sanitize(req.body.sector),
       leadSource: sanitize(req.body.leadSource),
+      estimate: sanitize(req.body.estimate),
+      estimatedHours: sanitize(req.body.estimatedHours),
       ip: req.ip || req.headers['x-forwarded-for'] || 'unknown'
     };
 
     const stmt = db.prepare(`
-      INSERT INTO submissions (type, name, email, phone, company, postcode, message, serviceType, frequency, size, sector, leadSource, ip)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO submissions (type, name, email, phone, company, postcode, message, serviceType, frequency, size, sector, leadSource, estimate, estimatedHours, ip)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    stmt.run(submission.type, submission.name, submission.email, submission.phone, submission.company, 
-             submission.postcode, submission.message, submission.serviceType, submission.frequency, 
-             submission.size, submission.sector, submission.leadSource, submission.ip);
+    stmt.run(submission.type, submission.name, submission.email, submission.phone, submission.company,
+             submission.postcode, submission.message, submission.serviceType, submission.frequency,
+             submission.size, submission.sector, submission.leadSource, submission.estimate,
+             submission.estimatedHours, submission.ip);
 
     await sendNotificationEmail(submission);
     res.json({ success: true, message: 'Quote request received' });
@@ -372,7 +387,7 @@ app.get('/admin', adminAuth, (req, res) => {
     </div>
     ${submissions.length > 0 ? `
     <table>
-      <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Service</th><th>Details</th></tr></thead>
+      <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Service</th><th>Estimate</th><th>Details</th></tr></thead>
       <tbody>
         ${submissions.map(s => `<tr>
           <td><span class="badge badge-${s.type}">${s.type}</span></td>
@@ -382,6 +397,7 @@ app.get('/admin', adminAuth, (req, res) => {
           <td>${s.phone ? `<a href="tel:${s.phone}">${s.phone}</a>` : '-'}</td>
           <td>${s.company || '-'}</td>
           <td>${s.serviceType || '-'}</td>
+          <td>${s.estimate ? `<strong>&pound;${s.estimate} pcm</strong>` : '-'}</td>
           <td class="detail">${s.message || s.sector || '-'}</td>
         </tr>`).join('')}
       </tbody>
