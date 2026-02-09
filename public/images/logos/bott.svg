@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 50">
+  <defs>
+    <linearGradient id="bott-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#43a047"/>
+      <stop offset="100%" stop-color="#2e7d32"/>
+    </linearGradient>
+  </defs>
+  <!-- Green background block -->
+  <rect x="5" y="5" width="40" height="40" rx="4" fill="url(#bott-grad)"/>
+  <!-- bott text inside block -->
+  <text x="25" y="32" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="800" fill="#ffffff" letter-spacing="0.5">bott</text>
+  <!-- Full company name -->
+  <text x="55" y="32" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="1" fill="#2e7d32">bott</text>
+</svg>
