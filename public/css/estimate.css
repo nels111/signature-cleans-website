@@ -302,8 +302,47 @@
     font-weight: 600;
 }
 
+/* Cell Type Classification */
+.results-cell-type {
+    padding: 24px 24px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cell-intro {
+    font-size: 0.9375rem;
+    color: var(--color-secondary);
+    margin-bottom: 12px;
+}
+
+.cell-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    background: var(--color-primary);
+    color: var(--color-background);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 100px;
+    letter-spacing: 0.02em;
+}
+
+.cell-desc {
+    font-size: 0.8125rem;
+    color: var(--color-secondary);
+    margin-top: 10px;
+    line-height: 1.5;
+}
+
+/* Price band intro */
+.results-band-intro {
+    font-size: 0.9375rem;
+    color: var(--color-secondary);
+    margin-bottom: 16px;
+}
+
 .results-main {
-    padding: 28px 24px;
+    padding: 24px;
 }
 
 .results-weekly {

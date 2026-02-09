@@ -37,9 +37,24 @@ document.addEventListener('DOMContentLoaded', function () {
         var mL = Math.round(wL * 4.33);
         var mH = Math.round(wH * 4.33);
 
+        // Cell classification
+        var cBadge, cDesc;
+        if (t <= 15) {
+            cBadge = 'Cell Type A';
+            cDesc = 'Typically smaller sites such as offices, salons, and retail units';
+        } else if (t <= 30) {
+            cBadge = 'Cell Type B';
+            cDesc = 'Typically mid-size sites such as restaurants, gyms, and larger offices';
+        } else {
+            cBadge = 'Cell Type C';
+            cDesc = 'Typically larger sites such as showrooms, warehouses, and multi-floor offices';
+        }
+
         placeholder.style.display = 'none';
         resultsCard.style.display = '';
 
+        document.getElementById('results-cell-badge').textContent = cBadge;
+        document.getElementById('results-cell-desc').textContent = cDesc;
         document.getElementById('results-weekly-range').innerHTML =
             '\u00A3' + wL.toLocaleString() + ' \u2013 \u00A3' + wH.toLocaleString();
         document.getElementById('results-monthly-range').innerHTML =
