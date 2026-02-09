@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 50">
+  <!-- Bott - green square with white text -->
+  <rect x="5" y="2" width="46" height="46" rx="4" fill="#3AAA35"/>
+  <text x="28" y="34" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff">bott</text>
+  <!-- Extended wordmark -->
+  <text x="90" y="34" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="1" fill="#3AAA35">bott</text>
+</svg>

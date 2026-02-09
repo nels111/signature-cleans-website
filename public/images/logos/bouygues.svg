@@ -1,3 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 40">
-  <text x="90" y="28" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" letter-spacing="2" fill="#1a1a1a">BOUYGUES UK</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 50">
+  <!-- Orange pill shape background -->
+  <rect x="10" y="5" width="200" height="40" rx="20" ry="20" fill="#F47920"/>
+  <!-- Inner white pill -->
+  <rect x="40" y="13" width="140" height="24" rx="12" ry="12" fill="#ffffff"/>
+  <!-- BOUYGUES text -->
+  <text x="95" y="31" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1" fill="#1a1a1a">BOUYGUES</text>
+  <!-- UK text in teal -->
+  <text x="155" y="31" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#00857C">UK</text>
 </svg>

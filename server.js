@@ -230,12 +230,12 @@ const ESTIMATOR_CONFIG = {
   weeksPerMonth: 4.33,
 
   // Approximate hours per cleaning visit by site size
-  // Derived from ~500 sq ft / hr general office rule
+  // Derived from ~50 m² / hr general office rule
   sizeToHoursPerDay: {
-    'small':      1.5,    // Under 2,000 sq ft
-    'medium':     3,      // 2,000 – 10,000 sq ft
-    'large':      6,      // 10,000 – 50,000 sq ft
-    'very-large': 12      // 50,000+ sq ft
+    'small':      1.5,    // Under 200 m²
+    'medium':     3,      // 200 – 1,000 m²
+    'large':      6,      // 1,000 – 5,000 m²
+    'very-large': 12      // 5,000+ m²
   },
 
   // Scope-tier multiplier by site type
