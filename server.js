@@ -49,10 +49,20 @@ db.exec(`
     size TEXT,
     sector TEXT,
     leadSource TEXT,
+    estimate TEXT,
+    estimatedHours TEXT,
     ip TEXT,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )
 `);
+
+// Add estimate columns if they don't exist (migration for existing databases)
+try {
+  db.exec(`ALTER TABLE submissions ADD COLUMN estimate TEXT`);
+} catch (e) { /* column already exists */ }
+try {
+  db.exec(`ALTER TABLE submissions ADD COLUMN estimatedHours TEXT`);
+} catch (e) { /* column already exists */ }
 
 // ============================================
 // EMAIL CONFIGURATION
@@ -127,6 +137,8 @@ async function sendNotificationEmail(submission) {
       ${submission.sector ? `<div class="field"><div class="label">Sector</div><div class="value">${submission.sector}</div></div>` : ''}
       ${submission.size ? `<div class="field"><div class="label">Size</div><div class="value">${submission.size}</div></div>` : ''}
       ${submission.frequency ? `<div class="field"><div class="label">Frequency</div><div class="value">${submission.frequency}</div></div>` : ''}
+      ${submission.estimate ? `<div class="field"><div class="label">Website Estimate</div><div class="value" style="font-size:18px;font-weight:bold;color:#2563eb;">&pound;${submission.estimate}</div></div>` : ''}
+      ${submission.estimatedHours ? `<div class="field"><div class="label">Estimated Hours/Day</div><div class="value">${submission.estimatedHours}</div></div>` : ''}
       ${submission.leadSource ? `<div class="field"><div class="label">Lead Source</div><div class="value">${submission.leadSource}</div></div>` : ''}
       ${submission.message ? `<div class="message-box"><div class="label">Message</div><div class="value">${submission.message.replace(/\n/g, '<br>')}</div></div>` : ''}
       <div class="footer">
@@ -207,8 +219,105 @@ function validateContact(data) {
 }
 
 // ============================================
+// QUOTE ESTIMATOR CONFIG — Price Bands Framework
+// Based on client billing rates, NOT internal costs.
+// ============================================
+const ESTIMATOR_CONFIG = {
+  // Client-facing billing rates (£/hr)
+  billingRateLow:  25,    // Floor rate — never quote below this
+  billingRateHigh: 27,    // Target rate
+
+  weeksPerMonth: 4.33,
+
+  // Approximate hours per cleaning visit by site size
+  // Derived from ~500 sq ft / hr general office rule
+  sizeToHoursPerDay: {
+    'small':      1.5,    // Under 2,000 sq ft
+    'medium':     3,      // 2,000 – 10,000 sq ft
+    'large':      6,      // 10,000 – 50,000 sq ft
+    'very-large': 12      // 50,000+ sq ft
+  },
+
+  // Scope-tier multiplier by site type
+  // Standard = 1.0, Enhanced (+10-15%), Heavy (+20-30%)
+  scopeMultiplier: {
+    'Office/Commercial':      1.0,    // Standard scope
+    'Education/Institutional': 1.0,   // Standard scope
+    'Dental/Medical':          1.12,  // Enhanced — clinical areas
+    'Hospitality/Venue':       1.12,  // Enhanced — front-of-house standards
+    'Welfare/Construction':    1.15,  // Enhanced — welfare regs
+    'Specialist/Industrial':   1.25   // Heavy — industrial / specialist
+  }
+};
+
+// ============================================
 // API ROUTES
 // ============================================
+
+// Estimate endpoint — Price Bands calculation
+app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 30 }), (req, res) => {
+  try {
+    const { siteType, size, frequency } = req.body;
+    const freq = parseInt(frequency);
+
+    if (!size || !freq || freq < 1 || freq > 7) {
+      return res.status(400).json({ success: false, error: 'Invalid input' });
+    }
+
+    const baseHours = ESTIMATOR_CONFIG.sizeToHoursPerDay[size];
+    if (!baseHours) {
+      return res.status(400).json({ success: false, error: 'Invalid size' });
+    }
+
+    // Apply scope multiplier for site type (Enhanced / Heavy sites need more hours)
+    const scopeMult = ESTIMATOR_CONFIG.scopeMultiplier[siteType] || 1.0;
+    const hoursPerDay = Math.round(baseHours * scopeMult * 10) / 10;
+    const hoursPerWeek = Math.round(hoursPerDay * freq * 10) / 10;
+
+    // Weekly charge: hours × billing rate
+    const weeklyLow  = hoursPerWeek * ESTIMATOR_CONFIG.billingRateLow;
+    const weeklyHigh = hoursPerWeek * ESTIMATOR_CONFIG.billingRateHigh;
+
+    // Monthly charge: weekly × 4.33, rounded to nearest £10
+    const monthlyLow  = Math.round(weeklyLow  * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+    const monthlyHigh = Math.round(weeklyHigh * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+
+    // Round weekly to nearest £5
+    const weeklyLowRounded  = Math.round(weeklyLow  / 5) * 5;
+    const weeklyHighRounded = Math.round(weeklyHigh / 5) * 5;
+
+    // Classify into Cell Type based on weekly hours
+    let cellType, cellLabel;
+    if (hoursPerWeek <= 15) {
+      cellType = 'A';
+      cellLabel = 'Small Site';
+    } else if (hoursPerWeek <= 30) {
+      cellType = 'B';
+      cellLabel = 'Medium Site';
+    } else {
+      cellType = 'C';
+      cellLabel = 'Large Site';
+    }
+
+    res.json({
+      success: true,
+      estimate: {
+        cellType: cellType,
+        cellLabel: cellLabel,
+        weeklyLow:  weeklyLowRounded,
+        weeklyHigh: weeklyHighRounded,
+        monthlyLow:  monthlyLow,
+        monthlyHigh: monthlyHigh,
+        hoursPerDay: hoursPerDay,
+        hoursPerWeek: hoursPerWeek
+      }
+    });
+  } catch (error) {
+    console.error('Estimate error:', error);
+    res.status(500).json({ success: false, error: 'Calculation failed' });
+  }
+});
+
 app.post('/api/quote', formLimiter, async (req, res) => {
   try {
     const errors = validateQuote(req.body);
@@ -228,16 +337,19 @@ app.post('/api/quote', formLimiter, async (req, res) => {
       size: sanitize(req.body.size),
       sector: sanitize(req.body.sector),
       leadSource: sanitize(req.body.leadSource),
+      estimate: sanitize(req.body.estimate),
+      estimatedHours: sanitize(req.body.estimatedHours),
       ip: req.ip || req.headers['x-forwarded-for'] || 'unknown'
     };
 
     const stmt = db.prepare(`
-      INSERT INTO submissions (type, name, email, phone, company, postcode, message, serviceType, frequency, size, sector, leadSource, ip)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO submissions (type, name, email, phone, company, postcode, message, serviceType, frequency, size, sector, leadSource, estimate, estimatedHours, ip)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    stmt.run(submission.type, submission.name, submission.email, submission.phone, submission.company, 
-             submission.postcode, submission.message, submission.serviceType, submission.frequency, 
-             submission.size, submission.sector, submission.leadSource, submission.ip);
+    stmt.run(submission.type, submission.name, submission.email, submission.phone, submission.company,
+             submission.postcode, submission.message, submission.serviceType, submission.frequency,
+             submission.size, submission.sector, submission.leadSource, submission.estimate,
+             submission.estimatedHours, submission.ip);
 
     await sendNotificationEmail(submission);
     res.json({ success: true, message: 'Quote request received' });
@@ -372,7 +484,7 @@ app.get('/admin', adminAuth, (req, res) => {
     </div>
     ${submissions.length > 0 ? `
     <table>
-      <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Service</th><th>Details</th></tr></thead>
+      <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Service</th><th>Estimate</th><th>Details</th></tr></thead>
       <tbody>
         ${submissions.map(s => `<tr>
           <td><span class="badge badge-${s.type}">${s.type}</span></td>
@@ -382,6 +494,7 @@ app.get('/admin', adminAuth, (req, res) => {
           <td>${s.phone ? `<a href="tel:${s.phone}">${s.phone}</a>` : '-'}</td>
           <td>${s.company || '-'}</td>
           <td>${s.serviceType || '-'}</td>
+          <td>${s.estimate ? `<strong>&pound;${s.estimate}</strong>` : '-'}</td>
           <td class="detail">${s.message || s.sector || '-'}</td>
         </tr>`).join('')}
       </tbody>
