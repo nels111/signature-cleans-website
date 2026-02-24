@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Blue outer ring -->
+  <circle cx="200" cy="200" r="195" fill="#1a47b0"/>
+  <!-- Green inner circle -->
+  <circle cx="200" cy="200" r="170" fill="#b5c94e"/>
+  <!-- Signature Cleans - main brand name -->
+  <text x="200" y="150" text-anchor="middle" font-family="'Georgia', 'Times New Roman', serif" font-size="72" font-weight="700" fill="#1a1a1a" letter-spacing="-1">Signature</text>
+  <text x="200" y="215" text-anchor="middle" font-family="'Georgia', 'Times New Roman', serif" font-size="72" font-weight="700" fill="#1a1a1a" letter-spacing="-1">Cleans</text>
+  <!-- COMPLETE CLEANING SERVICES -->
+  <text x="200" y="262" text-anchor="middle" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="700" fill="#1a1a1a" letter-spacing="2">COMPLETE CLEANING</text>
+  <text x="200" y="290" text-anchor="middle" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="700" fill="#1a1a1a" letter-spacing="2">SERVICES</text>
+  <!-- PEACE OF MIND, EVERY TIME -->
+  <text x="200" y="335" text-anchor="middle" font-family="'Arial', 'Helvetica', sans-serif" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="1.5">PEACE OF MIND,</text>
+  <text x="200" y="360" text-anchor="middle" font-family="'Arial', 'Helvetica', sans-serif" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="1.5">EVERY TIME</text>
+</svg>
