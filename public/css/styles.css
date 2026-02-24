@@ -46,7 +46,7 @@
 
 /* Nav Logo Image */
 .nav-logo-img {
-    height: 70px;
+    height: 40px;
     width: auto;
     object-fit: contain;
 }
@@ -141,7 +141,7 @@
 
 /* Footer Logo Image */
 .footer-logo-img {
-    height: 60px;
+    height: 50px;
     width: auto;
     object-fit: contain;
     margin-bottom: var(--space-xs);
