@@ -46,7 +46,7 @@
 
 /* Nav Logo Image */
 .nav-logo-img {
-    height: 70px;
+    height: 40px;
     width: auto;
     object-fit: contain;
 }
@@ -141,7 +141,7 @@
 
 /* Footer Logo Image */
 .footer-logo-img {
-    height: 60px;
+    height: 50px;
     width: auto;
     object-fit: contain;
     margin-bottom: var(--space-xs);
@@ -247,8 +247,10 @@ a {
     left: 0;
     right: 0;
     z-index: 1000;
-    background: #ebebeb;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     transition: all var(--transition-medium);
 }
 
@@ -259,7 +261,7 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 80px;
+    height: 60px;
 }
 
 .nav-logo {
@@ -904,7 +906,7 @@ a {
     .nav-links {
         display: none;
         position: absolute;
-        top: 80px;
+        top: 60px;
         left: 0;
         right: 0;
         background: var(--color-background);
