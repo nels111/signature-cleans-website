@@ -46,7 +46,7 @@
 
 /* Nav Logo Image */
 .nav-logo-img {
-    height: 40px;
+    height: 80px;
     width: auto;
     object-fit: contain;
 }
@@ -261,7 +261,7 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 60px;
+    height: 100px;
 }
 
 .nav-logo {
@@ -906,7 +906,7 @@ a {
     .nav-links {
         display: none;
         position: absolute;
-        top: 60px;
+        top: 100px;
         left: 0;
         right: 0;
         background: var(--color-background);
