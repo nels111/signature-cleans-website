@@ -16,10 +16,11 @@
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
+      "@id": "https://signature-cleans.co.uk/#business",
       "name": "Signature Cleans",
       "image": "https://signature-cleans.co.uk/images/logo.jpeg",
       "url": "https://signature-cleans.co.uk",
-      "telephone": "+44 1392 931035",
+      "telephone": "+441392931035",
       "email": "nick@signature-cleans.co.uk",
       "address": {
         "@type": "PostalAddress",
@@ -27,7 +28,16 @@
         "addressRegion": "Devon",
         "addressCountry": "GB"
       },
-      "areaServed": ["Devon", "Cornwall", "Somerset"],
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 50.7236,
+        "longitude": -3.5275
+      },
+      "areaServed": [
+        {"@type": "State", "name": "Devon"},
+        {"@type": "State", "name": "Cornwall"},
+        {"@type": "State", "name": "Somerset"}
+      ],
       "priceRange": "££",
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
@@ -36,6 +46,27 @@
         "closes": "18:00"
       },
       "description": "Professional commercial cleaning services in Exeter and across Devon, Cornwall and Somerset. SSIP and CQMS accredited.",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Commercial Cleaning Services",
+        "itemListElement": [
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Contract Cleaning", "url": "https://signature-cleans.co.uk/services/contract-cleaning.html"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Deep Cleaning", "url": "https://signature-cleans.co.uk/services/deep-cleaning.html"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Specialist Services", "url": "https://signature-cleans.co.uk/services/specialist-services.html"}}
+        ]
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "reviewCount": "1",
+        "bestRating": "5"
+      },
+      "review": {
+        "@type": "Review",
+        "author": {"@type": "Person", "name": "Office Manager, Backline Logistics"},
+        "reviewRating": {"@type": "Rating", "ratingValue": "5"},
+        "reviewBody": "We have been using Nick's team at Signature Cleans for about 6 months now and have to say the service has been impeccable. James and Ken are here once a week and they clean our offices and facilities to the very highest standard and are 2 really friendly chaps. I would fully recommend Signature Cleans to anyone."
+      },
       "sameAs": [
         "https://www.linkedin.com/company/100613310/",
         "https://www.facebook.com/profile.php?id=61554538772884"

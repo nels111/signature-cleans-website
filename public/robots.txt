@@ -3,5 +3,6 @@ Allow: /
 
 Sitemap: https://signature-cleans.co.uk/sitemap.xml
 
-# Block admin pages
+# Block admin and API routes
 Disallow: /admin
+Disallow: /api/
