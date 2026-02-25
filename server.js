@@ -20,6 +20,7 @@ const Database = require('better-sqlite3');
 const validator = require('validator');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -149,6 +150,167 @@ async function sendNotificationEmail(submission) {
   } catch (error) {
     console.error('✗ Email failed:', error.message);
   }
+}
+
+// ============================================
+// ZOHO CRM INTEGRATION
+// ============================================
+const zoho = {
+  clientId:     process.env.ZOHO_CLIENT_ID     || '',
+  clientSecret: process.env.ZOHO_CLIENT_SECRET || '',
+  refreshToken: process.env.ZOHO_REFRESH_TOKEN || '',
+  domain:       process.env.ZOHO_DOMAIN        || 'eu',  // 'eu', 'com', 'in', 'au', 'jp'
+  accessToken:  null,
+  tokenExpiry:  0,
+
+  get enabled() {
+    return !!(this.clientId && this.clientSecret && this.refreshToken);
+  },
+
+  get accountsUrl() {
+    return `https://accounts.zoho.${this.domain}`;
+  },
+
+  get apiUrl() {
+    return `https://www.zohoapis.${this.domain}`;
+  },
+
+  // Fetch a fresh access token using the refresh token
+  async getAccessToken() {
+    // Return cached token if still valid (with 60s buffer)
+    if (this.accessToken && Date.now() < this.tokenExpiry - 60000) {
+      return this.accessToken;
+    }
+
+    return new Promise((resolve, reject) => {
+      const postData = new URLSearchParams({
+        refresh_token: this.refreshToken,
+        client_id:     this.clientId,
+        client_secret: this.clientSecret,
+        grant_type:    'refresh_token'
+      }).toString();
+
+      const url = new URL(`${this.accountsUrl}/oauth/v2/token`);
+      const options = {
+        hostname: url.hostname,
+        path:     url.pathname + '?' + postData,
+        method:   'POST',
+        headers:  { 'Content-Length': 0 }
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.access_token) {
+              this.accessToken = parsed.access_token;
+              // Zoho tokens last 1 hour
+              this.tokenExpiry = Date.now() + (parsed.expires_in || 3600) * 1000;
+              resolve(this.accessToken);
+            } else {
+              reject(new Error('Zoho token error: ' + (parsed.error || data)));
+            }
+          } catch (e) {
+            reject(new Error('Zoho token parse error: ' + e.message));
+          }
+        });
+      });
+      req.on('error', reject);
+      req.end();
+    });
+  },
+
+  // Push a lead to Zoho CRM
+  async pushLead(submission) {
+    if (!this.enabled) return;
+
+    try {
+      const token = await this.getAccessToken();
+
+      // Map submission fields to Zoho Lead fields
+      const nameParts = (submission.name || '').trim().split(/\s+/);
+      const firstName = nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : '';
+      const lastName  = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0] || 'Unknown';
+
+      const lead = {
+        First_Name:  firstName,
+        Last_Name:   lastName,
+        Email:       submission.email || '',
+        Phone:       submission.phone || '',
+        Company:     submission.company || 'Not specified',
+        City:        submission.postcode || '',
+        Description: this._buildDescription(submission),
+        Lead_Source: 'Website',
+        Lead_Status: 'New'
+      };
+
+      const body = JSON.stringify({ data: [lead] });
+
+      return new Promise((resolve, reject) => {
+        const url = new URL(`${this.apiUrl}/crm/v5/Leads`);
+        const options = {
+          hostname: url.hostname,
+          path:     url.pathname,
+          method:   'POST',
+          headers: {
+            'Authorization': 'Zoho-oauthtoken ' + token,
+            'Content-Type':  'application/json',
+            'Content-Length': Buffer.byteLength(body)
+          }
+        };
+
+        const req = https.request(options, (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.data && parsed.data[0] && parsed.data[0].status === 'success') {
+                console.log('✓ Zoho CRM: Lead created — ' + parsed.data[0].details.id);
+              } else {
+                console.error('✗ Zoho CRM error:', data);
+              }
+            } catch (e) {
+              console.error('✗ Zoho CRM parse error:', e.message);
+            }
+            resolve();
+          });
+        });
+        req.on('error', (err) => {
+          console.error('✗ Zoho CRM network error:', err.message);
+          resolve(); // Don't reject — lead is already in local DB
+        });
+        req.write(body);
+        req.end();
+      });
+    } catch (err) {
+      console.error('✗ Zoho CRM push failed:', err.message);
+      // Never throw — local DB is the safety net
+    }
+  },
+
+  // Build a readable description for the Zoho lead note
+  _buildDescription(s) {
+    const lines = [];
+    if (s.type)           lines.push('Type: ' + s.type);
+    if (s.leadSource)     lines.push('Lead Source: ' + s.leadSource);
+    if (s.serviceType)    lines.push('Service: ' + s.serviceType);
+    if (s.sector)         lines.push('Sector: ' + s.sector);
+    if (s.size)           lines.push('Site Size: ' + s.size);
+    if (s.frequency)      lines.push('Frequency: ' + s.frequency);
+    if (s.estimate)       lines.push('Website Estimate: £' + s.estimate);
+    if (s.postcode)       lines.push('Postcode: ' + s.postcode);
+    if (s.message)        lines.push('\nMessage:\n' + s.message);
+    return lines.join('\n');
+  }
+};
+
+if (zoho.enabled) {
+  console.log('✓ Zoho CRM integration configured (domain: .' + zoho.domain + ')');
+} else {
+  console.log('⚠ Zoho CRM not configured — set ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN');
 }
 
 // ============================================
@@ -349,6 +511,10 @@ app.post('/api/quote', formLimiter, async (req, res) => {
              submission.estimatedHours, submission.ip);
 
     await sendNotificationEmail(submission);
+
+    // Push to Zoho CRM (async, non-blocking — DB is the safety net)
+    zoho.pushLead(submission).catch(() => {});
+
     res.json({ success: true, message: 'Quote request received' });
   } catch (error) {
     console.error('Quote error:', error);
@@ -387,6 +553,10 @@ app.post('/api/contact', formLimiter, async (req, res) => {
              submission.size, submission.sector, submission.leadSource, submission.ip);
 
     await sendNotificationEmail(submission);
+
+    // Push to Zoho CRM (async, non-blocking — DB is the safety net)
+    zoho.pushLead(submission).catch(() => {});
+
     res.json({ success: true, message: 'Message received' });
   } catch (error) {
     console.error('Contact error:', error);
