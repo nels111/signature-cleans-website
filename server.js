@@ -3,13 +3,11 @@
  * Commercial Cleaning Website Backend
  */
 
-// Load environment variables from .env file (if it exists, for local development)
-if (process.env.NODE_ENV !== 'production') {
-  try {
-    require('dotenv').config();
-  } catch (e) {
-    // dotenv not installed, that's ok
-  }
+// Load environment variables from .env file
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv not installed, that's ok
 }
 
 const express = require('express');
