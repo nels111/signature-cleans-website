@@ -348,6 +348,28 @@ const formLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// ============================================
+// OLD URL REDIRECTS (from previous site — preserves Google sitelinks)
+// ============================================
+const oldUrlRedirects = {
+  '/contact-us':      '/contact.html',
+  '/contact-us/':     '/contact.html',
+  '/testimonials':    '/#testimonials',
+  '/testimonials/':   '/#testimonials',
+  '/blog/':           '/blog.html',
+  '/about-us':        '/about.html',
+  '/about-us/':       '/about.html',
+  '/services':        '/#services',
+  '/services/':       '/#services',
+  '/get-a-quote':     '/quote.html',
+  '/get-a-quote/':    '/quote.html',
+  '/defaultsite':     '/',
+};
+
+Object.entries(oldUrlRedirects).forEach(([from, to]) => {
+  app.get(from, (req, res) => res.redirect(301, to));
+});
+
 // Static files — cache CSS/JS/images for 7 days, HTML for 1 hour
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
