@@ -15,6 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const Database = require('better-sqlite3');
 const validator = require('validator');
@@ -319,6 +320,9 @@ if (zoho.enabled) {
 // Trust proxy for accurate IP addresses (important when behind reverse proxy/load balancer)
 app.set('trust proxy', true);
 
+// Gzip compression — reduces response sizes by ~70%
+app.use(compression());
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -344,8 +348,15 @@ const formLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Static files — cache CSS/JS/images for 7 days, HTML for 1 hour
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+  }
+}));
 
 // ============================================
 // VALIDATION
