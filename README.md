@@ -1,6 +1,6 @@
 # Signature Cleans Website
 
-Production website for Signature Cleans Ltd - Commercial Cleaning Services in Devon, Cornwall & Somerset.
+Production website for Signature Cleans - Commercial Cleaning Services in Devon, Cornwall & Somerset.
 
 ## Quick Start
 
@@ -206,4 +206,4 @@ For business enquiries:
 
 ---
 
-© 2025 Signature Cleans Ltd. All rights reserved.
+© 2025 Signature Cleans. All rights reserved.

@@ -152,6 +152,103 @@ async function sendNotificationEmail(submission) {
 }
 
 // ============================================
+// AUTO-REPLY EMAIL (sent to the customer)
+// ============================================
+async function sendAutoReplyEmail(submission) {
+  if (!transporter) return;
+  if (process.env.AUTO_REPLY_ENABLED === 'false') return;
+
+  const emailFrom = process.env.EMAIL_FROM || 'website@signature-cleans.co.uk';
+  const isQuote = submission.type === 'quote';
+
+  const subject = isQuote
+    ? 'Thanks for your quote request — Signature Cleans'
+    : 'We\'ve received your message — Signature Cleans';
+
+  const headline = isQuote
+    ? 'We\'ve received your quote request'
+    : 'Thanks for getting in touch';
+
+  const bodyText = isQuote
+    ? 'Thank you for requesting a quote. One of our team will review your requirements and be in touch within 24 hours to discuss next steps.'
+    : 'Thank you for contacting us. We\'ve received your message and will get back to you as soon as possible, usually within one working day.';
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f7; }
+    .wrapper { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header { background: #1d1d1f; color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+    .body { padding: 30px; }
+    .body p { margin: 0 0 16px; font-size: 15px; color: #333; }
+    .body p:last-child { margin-bottom: 0; }
+    .greeting { font-size: 17px; font-weight: 600; color: #1d1d1f; }
+    .summary { background: #f5f5f7; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+    .summary-label { color: #86868b; font-weight: 500; }
+    .summary-value { color: #1d1d1f; font-weight: 600; text-align: right; }
+    .divider { height: 1px; background: #e5e5e5; margin: 20px 0; }
+    .contact-info { font-size: 14px; color: #666; }
+    .contact-info a { color: #2563eb; text-decoration: none; }
+    .footer { padding: 20px 30px; text-align: center; font-size: 12px; color: #86868b; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <h1>Signature Cleans</h1>
+      </div>
+      <div class="body">
+        <p class="greeting">Hi ${submission.name},</p>
+        <p>${bodyText}</p>
+        ${isQuote && (submission.serviceType || submission.estimate) ? `
+        <div class="summary">
+          ${submission.serviceType ? `<div class="summary-row"><span class="summary-label">Service</span><span class="summary-value">${submission.serviceType}</span></div>` : ''}
+          ${submission.sector ? `<div class="summary-row"><span class="summary-label">Sector</span><span class="summary-value">${submission.sector}</span></div>` : ''}
+          ${submission.size ? `<div class="summary-row"><span class="summary-label">Size</span><span class="summary-value">${submission.size}</span></div>` : ''}
+          ${submission.frequency ? `<div class="summary-row"><span class="summary-label">Frequency</span><span class="summary-value">${submission.frequency}</span></div>` : ''}
+          ${submission.estimate ? `<div class="summary-row"><span class="summary-label">Indicative Estimate</span><span class="summary-value">&pound;${submission.estimate}/month</span></div>` : ''}
+        </div>` : ''}
+        <div class="divider"></div>
+        <div class="contact-info">
+          <p>In the meantime, if you have any questions you can reach us at:</p>
+          <p>
+            Phone: <a href="tel:01392931035">01392 931035</a><br>
+            Email: <a href="mailto:hello@signature-cleans.co.uk">hello@signature-cleans.co.uk</a>
+          </p>
+        </div>
+      </div>
+      <div class="footer">
+        Signature Cleans &bull; Commercial Cleaning Services<br>
+        Exeter, Devon &bull; <a href="https://signature-cleans.co.uk" style="color:#86868b;">signature-cleans.co.uk</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  try {
+    await transporter.sendMail({
+      from: `"Signature Cleans" <${emailFrom}>`,
+      to: submission.email,
+      subject,
+      html,
+      replyTo: 'hello@signature-cleans.co.uk'
+    });
+    console.log('✓ Auto-reply sent to ' + submission.email);
+  } catch (error) {
+    console.error('✗ Auto-reply failed:', error.message);
+  }
+}
+
+// ============================================
 // ZOHO CRM INTEGRATION
 // ============================================
 const zoho = {
@@ -543,6 +640,7 @@ app.post('/api/quote', formLimiter, async (req, res) => {
              submission.estimatedHours, submission.ip);
 
     await sendNotificationEmail(submission);
+    sendAutoReplyEmail(submission).catch(() => {});
 
     // Push to Zoho CRM (async, non-blocking — DB is the safety net)
     zoho.pushLead(submission).catch(() => {});
@@ -585,6 +683,7 @@ app.post('/api/contact', formLimiter, async (req, res) => {
              submission.size, submission.sector, submission.leadSource, submission.ip);
 
     await sendNotificationEmail(submission);
+    sendAutoReplyEmail(submission).catch(() => {});
 
     // Push to Zoho CRM (async, non-blocking — DB is the safety net)
     zoho.pushLead(submission).catch(() => {});
