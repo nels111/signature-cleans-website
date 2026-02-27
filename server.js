@@ -3,18 +3,17 @@
  * Commercial Cleaning Website Backend
  */
 
-// Load environment variables from .env file (if it exists, for local development)
-if (process.env.NODE_ENV !== 'production') {
-  try {
-    require('dotenv').config();
-  } catch (e) {
-    // dotenv not installed, that's ok
-  }
+// Load environment variables from .env file
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv not installed, that's ok
 }
 
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const Database = require('better-sqlite3');
 const validator = require('validator');
@@ -84,7 +83,7 @@ async function sendNotificationEmail(submission) {
     return;
   }
 
-  const emailTo = process.env.EMAIL_TO || 'nick@signature-cleans.co.uk';
+  const emailTo = process.env.EMAIL_TO || 'hello@signature-cleans.co.uk';
   const emailFrom = process.env.EMAIL_FROM || 'website@signature-cleans.co.uk';
 
   const isQuote = submission.type === 'quote';
@@ -319,6 +318,9 @@ if (zoho.enabled) {
 // Trust proxy for accurate IP addresses (important when behind reverse proxy/load balancer)
 app.set('trust proxy', true);
 
+// Gzip compression — reduces response sizes by ~70%
+app.use(compression());
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -327,7 +329,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      upgradeInsecureRequests: null  // Don't force HTTPS until SSL cert is installed
+      upgradeInsecureRequests: []
     }
   }
 }));
@@ -344,8 +346,37 @@ const formLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
+// ============================================
+// OLD URL REDIRECTS (from previous site — preserves Google sitelinks)
+// ============================================
+const oldUrlRedirects = {
+  '/contact-us':      '/contact.html',
+  '/contact-us/':     '/contact.html',
+  '/testimonials':    '/#testimonials',
+  '/testimonials/':   '/#testimonials',
+  '/blog/':           '/blog.html',
+  '/about-us':        '/about.html',
+  '/about-us/':       '/about.html',
+  '/services':        '/#services',
+  '/services/':       '/#services',
+  '/get-a-quote':     '/quote.html',
+  '/get-a-quote/':    '/quote.html',
+  '/defaultsite':     '/',
+};
+
+Object.entries(oldUrlRedirects).forEach(([from, to]) => {
+  app.get(from, (req, res) => res.redirect(301, to));
+});
+
+// Static files — cache CSS/JS/images for 7 days, HTML for 1 hour
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+  }
+}));
 
 // ============================================
 // VALIDATION

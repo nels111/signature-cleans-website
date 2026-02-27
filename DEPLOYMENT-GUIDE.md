@@ -109,7 +109,7 @@ This guide will walk you through deploying your website step-by-step. No technic
    SMTP_USER=your_email@example.com
    SMTP_PASS=your_email_password
    EMAIL_FROM=website@signature-cleans.co.uk
-   EMAIL_TO=nick@signature-cleans.co.uk
+   EMAIL_TO=hello@signature-cleans.co.uk
    ```
 
 4. **Deploy:**

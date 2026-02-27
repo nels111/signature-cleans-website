@@ -9,7 +9,7 @@
 - ✅ **All 18 HTML pages** have identical header structure
 - ✅ Logo image (`images/logo.jpeg`) used on ALL pages (no text logos)
 - ✅ SVG icons for phone/email in topbar (no emojis)
-- ✅ Phone (01392 931035) and email (nick@signature-cleans.co.uk) in header AND footer on ALL pages
+- ✅ Phone (01392 931035) and email (hello@signature-cleans.co.uk) in header AND footer on ALL pages
 - ✅ Footer accreditations (SSIP & CQMS) on ALL pages
 - ✅ Social media links (LinkedIn & Facebook) with `rel="noopener"` on ALL pages
 - ✅ Contact link in footer Company section on ALL pages
