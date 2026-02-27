@@ -226,7 +226,7 @@ async function sendAutoReplyEmail(submission) {
         </div>
       </div>
       <div class="footer">
-        Signature Cleans Ltd &bull; Commercial Cleaning Services<br>
+        Signature Cleans &bull; Commercial Cleaning Services<br>
         Exeter, Devon &bull; <a href="https://signature-cleans.co.uk" style="color:#86868b;">signature-cleans.co.uk</a>
       </div>
     </div>
