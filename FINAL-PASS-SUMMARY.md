@@ -71,7 +71,7 @@ All remaining pages have been standardized with consistent headers, footers, log
 ✅ **All 18 HTML pages** now have:
 - Standardized header with logo image (no text logos)
 - SVG icons for phone/email (no emojis)
-- Phone (01392 931035) and email (nick@signature-cleans.co.uk) in header AND footer
+- Phone (01392 931035) and email (hello@signature-cleans.co.uk) in header AND footer
 - Footer accreditations (SSIP & CQMS)
 - Footer social media links with `rel="noopener"`
 - Consistent navigation structure

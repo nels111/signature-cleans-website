@@ -39,7 +39,7 @@ SMTP_PASS=your_email_password
 
 # Email Recipients
 EMAIL_FROM=website@signature-cleans.co.uk
-EMAIL_TO=nick@signature-cleans.co.uk
+EMAIL_TO=hello@signature-cleans.co.uk
 ```
 
 ## Features
@@ -202,7 +202,7 @@ For technical issues, contact the development team.
 
 For business enquiries:
 - Phone: 01392 931035
-- Email: nick@signature-cleans.co.uk
+- Email: hello@signature-cleans.co.uk
 
 ---
 

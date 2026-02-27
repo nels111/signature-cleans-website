@@ -83,7 +83,7 @@ async function sendNotificationEmail(submission) {
     return;
   }
 
-  const emailTo = process.env.EMAIL_TO || 'nick@signature-cleans.co.uk';
+  const emailTo = process.env.EMAIL_TO || 'hello@signature-cleans.co.uk';
   const emailFrom = process.env.EMAIL_FROM || 'website@signature-cleans.co.uk';
 
   const isQuote = submission.type === 'quote';

@@ -93,7 +93,7 @@ To standardize remaining pages, apply this pattern:
             <span class="topbar-divider">|</span>
             <span class="topbar-item">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <a href="mailto:nick@signature-cleans.co.uk">nick@signature-cleans.co.uk</a>
+                <a href="mailto:hello@signature-cleans.co.uk">hello@signature-cleans.co.uk</a>
             </span>
         </div>
     </div>
@@ -122,7 +122,7 @@ To standardize remaining pages, apply this pattern:
     <p class="footer-tagline">Peace of Mind, Every Time</p>
     <p class="footer-contact">
         <a href="tel:01392931035">01392 931035</a><br>
-        <a href="mailto:nick@signature-cleans.co.uk">nick@signature-cleans.co.uk</a>
+        <a href="mailto:hello@signature-cleans.co.uk">hello@signature-cleans.co.uk</a>
     </p>
     <div class="footer-accreditations">
         <span>SSIP Accredited</span>
