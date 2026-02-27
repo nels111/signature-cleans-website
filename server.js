@@ -214,7 +214,7 @@ async function sendAutoReplyEmail(submission) {
           ${submission.sector ? `<div class="summary-row"><span class="summary-label">Sector</span><span class="summary-value">${submission.sector}</span></div>` : ''}
           ${submission.size ? `<div class="summary-row"><span class="summary-label">Size</span><span class="summary-value">${submission.size}</span></div>` : ''}
           ${submission.frequency ? `<div class="summary-row"><span class="summary-label">Frequency</span><span class="summary-value">${submission.frequency}</span></div>` : ''}
-          ${submission.estimate ? `<div class="summary-row"><span class="summary-label">Indicative Estimate</span><span class="summary-value">&pound;${submission.estimate}/month</span></div>` : ''}
+          ${submission.estimate ? `<div class="summary-row"><span class="summary-label">Indicative Estimate</span><span class="summary-value">&pound;${submission.estimate.replace('/wk', '')} per week</span></div>` : ''}
         </div>` : ''}
         <div class="divider"></div>
         <div class="contact-info">
