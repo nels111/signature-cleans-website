@@ -257,6 +257,10 @@ module.exports = function createAdminRouter(db) {
         Dashboard
       </a>
       <div class="nav-section">Content</div>
+      <a href="/admin/content" class="${activeNav === 'content' ? 'active' : ''}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Page Content
+      </a>
       <a href="/admin/blog" class="${activeNav === 'blog' ? 'active' : ''}">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
         Blog Posts
@@ -422,7 +426,8 @@ module.exports = function createAdminRouter(db) {
         <div class="card">
           <div class="card-header"><h3>Quick Actions</h3></div>
           <div class="card-body">
-            <a href="/admin/blog/new" class="btn btn-primary" style="margin-bottom:10px;display:block;text-align:center;">New Blog Post</a>
+            <a href="/admin/content" class="btn btn-primary" style="margin-bottom:10px;display:block;text-align:center;">Edit Page Content</a>
+            <a href="/admin/blog/new" class="btn btn-outline" style="margin-bottom:10px;display:block;text-align:center;">New Blog Post</a>
             <a href="/admin/media" class="btn btn-outline" style="margin-bottom:10px;display:block;text-align:center;">Upload Media</a>
             <a href="/admin/pages" class="btn btn-outline" style="display:block;text-align:center;">Edit Page SEO</a>
           </div>
@@ -430,6 +435,7 @@ module.exports = function createAdminRouter(db) {
         <div class="card">
           <div class="card-header"><h3>Help</h3></div>
           <div class="card-body" style="font-size:14px;color:#6b7280;line-height:1.8;">
+            <p><strong>Page Content</strong> — Edit text and content on any page of the site</p>
             <p><strong>Blog Posts</strong> — Create and manage blog articles with images</p>
             <p><strong>Pages & SEO</strong> — Edit meta titles and descriptions for all pages</p>
             <p><strong>Head Tags</strong> — Add Google verification, analytics, or custom tags</p>
@@ -1040,6 +1046,246 @@ ${postCards}
     fs.writeFileSync(path.join(__dirname, 'public', 'blog.html'), html, 'utf-8');
     console.log('✓ Blog hub regenerated with ' + allPosts.length + ' posts');
   }
+
+
+  // ============================================
+  // PAGE CONTENT EDITOR
+  // ============================================
+
+  // Parse editable sections from HTML content
+  function parseEditableSections(html) {
+    const sections = [];
+    const regex = /<!-- editable:(\S+) label:(.*?) type:(\S+) -->([\s\S]*?)<!-- \/editable:\1 -->/g;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      sections.push({
+        id: match[1],
+        label: match[2].trim(),
+        type: match[3],
+        content: match[4].trim()
+      });
+    }
+    return sections;
+  }
+
+  // Get friendly page name from path
+  function getPageName(pagePath) {
+    const names = {
+      'index.html': 'Homepage',
+      'about.html': 'About Us',
+      'contact.html': 'Contact',
+      'quote.html': 'Get a Quote',
+      'services/contract-cleaning.html': 'Contract Cleaning',
+      'services/deep-cleaning.html': 'Deep Cleaning',
+      'services/specialist-services.html': 'Specialist Services',
+      'areas/devon.html': 'Devon Area',
+      'areas/cornwall.html': 'Cornwall Area',
+      'areas/somerset.html': 'Somerset Area'
+    };
+    return names[pagePath] || pagePath;
+  }
+
+  // LIST all pages with editable content
+  router.get('/content', requireAuth, (req, res) => {
+    const msg = req.query.saved === '1' ? 'Content saved successfully!' : null;
+    const publicDir = path.join(__dirname, 'public');
+    const pages = [];
+
+    function scanDir(dir, prefix) {
+      const files = fs.readdirSync(dir);
+      for (const f of files) {
+        const fullPath = path.join(dir, f);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory() && !['images', 'css', 'js', 'uploads', 'blog'].includes(f)) {
+          scanDir(fullPath, prefix + f + '/');
+        } else if (f.endsWith('.html') && !['thank-you.html', 'privacy.html', 'cookies.html', 'terms.html', 'estimator.html', 'blog.html'].includes(f)) {
+          const content = fs.readFileSync(fullPath, 'utf-8');
+          const sections = parseEditableSections(content);
+          if (sections.length > 0) {
+            pages.push({
+              path: prefix + f,
+              name: getPageName(prefix + f),
+              sectionCount: sections.length,
+              sections: sections.map(s => s.label)
+            });
+          }
+        }
+      }
+    }
+    scanDir(publicDir, '');
+
+    // Sort: main pages first
+    const order = ['index.html', 'about.html', 'contact.html', 'quote.html'];
+    pages.sort((a, b) => {
+      const aIdx = order.indexOf(a.path);
+      const bIdx = order.indexOf(b.path);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return a.path.localeCompare(b.path);
+    });
+
+    res.send(layout('Page Content', `
+      ${msg ? '<div class="alert alert-success">' + msg + '</div>' : ''}
+      <div class="alert alert-info">Edit the text and content on any page of your website. Click a page to start editing.</div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+        ${pages.map(p => `
+          <a href="/admin/content/edit?path=${encodeURIComponent(p.path)}" class="card" style="text-decoration:none;color:inherit;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="card-body" style="padding:24px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="width:40px;height:40px;border-radius:10px;background:#dbeafe;display:flex;align-items:center;justify-content:center;">
+                  <svg width="20" height="20" fill="none" stroke="#2563eb" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <div>
+                  <h3 style="font-size:16px;font-weight:600;margin:0;">${escHTML(p.name)}</h3>
+                  <div style="font-size:12px;color:#6b7280;">/${p.path}</div>
+                </div>
+              </div>
+              <div style="font-size:13px;color:#6b7280;">
+                <span class="badge badge-blue">${p.sectionCount} editable section${p.sectionCount !== 1 ? 's' : ''}</span>
+              </div>
+              <div style="margin-top:10px;font-size:12px;color:#9ca3af;line-height:1.5;">
+                ${p.sections.slice(0, 4).join(' &bull; ')}${p.sections.length > 4 ? ' &bull; +' + (p.sections.length - 4) + ' more' : ''}
+              </div>
+            </div>
+          </a>
+        `).join('')}
+      </div>
+
+      ${pages.length === 0 ? '<div class="card"><div class="card-body"><div class="empty-state"><h3>No editable pages found</h3><p>Pages need editable content markers to appear here.</p></div></div></div>' : ''}
+    `, 'content'));
+  });
+
+  // EDIT content for a specific page
+  router.get('/content/edit', requireAuth, (req, res) => {
+    const pagePath = req.query.path;
+    if (!pagePath) return res.redirect('/admin/content');
+
+    const fullPath = path.join(__dirname, 'public', pagePath);
+    if (!fs.existsSync(fullPath)) return res.redirect('/admin/content');
+
+    const html = fs.readFileSync(fullPath, 'utf-8');
+    const sections = parseEditableSections(html);
+    const pageName = getPageName(pagePath);
+    const msg = req.query.saved === '1' ? 'Content saved successfully!' : null;
+
+    if (sections.length === 0) {
+      return res.redirect('/admin/content');
+    }
+
+    // Build form fields for each editable section
+    let fieldIndex = 0;
+    const formFields = sections.map(s => {
+      fieldIndex++;
+      if (s.type === 'html') {
+        return `
+          <div class="card">
+            <div class="card-header"><h3>${escHTML(s.label)}</h3><span class="badge badge-blue">Rich Text</span></div>
+            <div class="card-body">
+              <div id="editor-${s.id}" class="content-editor">${s.content}</div>
+              <input type="hidden" name="editable_${s.id}" id="input-${s.id}" value="">
+            </div>
+          </div>`;
+      } else {
+        return `
+          <div class="card">
+            <div class="card-header"><h3>${escHTML(s.label)}</h3><span class="badge badge-green">Text</span></div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom:0;">
+                <textarea name="editable_${s.id}" rows="${s.content.length > 100 ? '3' : '1'}" style="font-size:15px;line-height:1.6;">${escHTML(s.content)}</textarea>
+                <div class="help">Plain text or basic HTML (e.g. &lt;br&gt; for line breaks, &lt;span&gt; for styling)</div>
+              </div>
+            </div>
+          </div>`;
+      }
+    }).join('\n');
+
+    // Collect all html-type editor IDs for Quill initialization
+    const htmlEditors = sections.filter(s => s.type === 'html').map(s => s.id);
+
+    res.send(layout('Edit: ' + pageName, `
+      ${msg ? '<div class="alert alert-success">' + msg + '</div>' : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <div>
+          <a href="/admin/content" style="color:#6b7280;text-decoration:none;font-size:14px;">&larr; All Pages</a>
+          <span style="color:#d1d5db;margin:0 8px;">/</span>
+          <span style="font-size:14px;color:#374151;font-weight:500;">${escHTML(pageName)}</span>
+        </div>
+        <a href="/${pagePath}" target="_blank" class="btn btn-outline btn-sm">View Page</a>
+      </div>
+
+      <form method="POST" action="/admin/content/save" id="content-form">
+        <input type="hidden" name="path" value="${escHTML(pagePath)}">
+
+        ${formFields}
+
+        <div style="position:sticky;bottom:0;background:#f0f2f5;padding:16px 0;border-top:1px solid #e5e7eb;margin-top:24px;display:flex;gap:12px;">
+          <button type="submit" class="btn btn-primary">Save All Changes</button>
+          <a href="/admin/content" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+
+      ${htmlEditors.length > 0 ? `
+      <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+      <style>
+        .content-editor { min-height: 200px; background: white; }
+        .content-editor .ql-editor { min-height: 180px; font-size: 15px; line-height: 1.7; }
+      </style>
+      <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+      <script>
+        var editors = {};
+        ${htmlEditors.map(id => `
+          editors['${id}'] = new Quill('#editor-${id}', {
+            theme: 'snow',
+            modules: {
+              toolbar: [
+                [{ 'header': [2, 3, 4, false] }],
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link'],
+                ['clean']
+              ]
+            }
+          });
+        `).join('\n')}
+
+        document.getElementById('content-form').addEventListener('submit', function(e) {
+          ${htmlEditors.map(id => `
+            document.getElementById('input-${id}').value = editors['${id}'].root.innerHTML;
+          `).join('\n')}
+        });
+      </script>` : ''}
+    `, 'content'));
+  });
+
+  // SAVE content changes
+  router.post('/content/save', requireAuth, (req, res) => {
+    const pagePath = req.body.path;
+    if (!pagePath) return res.redirect('/admin/content');
+
+    const fullPath = path.join(__dirname, 'public', pagePath);
+    if (!fs.existsSync(fullPath)) return res.redirect('/admin/content');
+
+    let html = fs.readFileSync(fullPath, 'utf-8');
+
+    // Replace each editable section with new content
+    for (const [key, value] of Object.entries(req.body)) {
+      if (key.startsWith('editable_')) {
+        const id = key.replace('editable_', '');
+        // Match the editable block and replace its content
+        const regex = new RegExp(
+          '(<!-- editable:' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ' label:.*? type:\\S+ -->)[\\s\\S]*?(<!-- \\/editable:' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ' -->)',
+          'g'
+        );
+        html = html.replace(regex, '$1\n' + value + '\n$2');
+      }
+    }
+
+    fs.writeFileSync(fullPath, html, 'utf-8');
+    console.log('✓ Page content updated: ' + pagePath);
+    res.redirect('/admin/content/edit?path=' + encodeURIComponent(pagePath) + '&saved=1');
+  });
 
 
   // ============================================
