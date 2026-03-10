@@ -44,6 +44,13 @@ module.exports = function createAdminRouter(db) {
     )
   `);
 
+  // Seed Google verification tag if not already present
+  const existingVerification = db.prepare("SELECT id FROM head_tags WHERE tag_content LIKE '%google-site-verification%'").get();
+  if (!existingVerification) {
+    db.prepare('INSERT INTO head_tags (page_path, tag_content, description) VALUES (?, ?, ?)')
+      .run('*', '<meta name="google-site-verification" content="8GQwdJk6Da8WsIvubmz-QXZ9eUUvukBImNBdgwdPsOjQ" />', 'Google Search Console verification');
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS page_meta (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1540,6 +1547,9 @@ ${postCards}
       </div>`}
     `, 'submissions'));
   });
+
+  // Inject head tags on startup (ensures seeded/admin tags are in HTML files)
+  injectHeadTags();
 
   return router;
 };
