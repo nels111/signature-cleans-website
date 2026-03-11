@@ -458,28 +458,19 @@ a {
 }
 
 /* ============================================
-   ABOUT HOME SECTION
+   SEO CONTENT (visually hidden, crawlable)
    ============================================ */
 
-.about-home {
-    padding: var(--space-xl) 0;
-    background: var(--color-background);
-}
-
-.about-home-content {
-    max-width: 800px;
-    margin: 0 auto;
-    font-size: 1.05rem;
-    line-height: 1.8;
-    color: var(--color-secondary);
-}
-
-.about-home-content p {
-    margin-bottom: var(--space-sm);
-}
-
-.about-home-content p:last-child {
-    margin-bottom: 0;
+.seo-content {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* ============================================
