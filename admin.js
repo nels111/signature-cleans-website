@@ -757,7 +757,7 @@ module.exports = function createAdminRouter(db) {
                 <img src="../images/logo-cropped.png" alt="Signature Cleans" class="nav-logo-img">
             </a>
             <div class="nav-links" id="nav-links">
-                <a href="../index.html#services">Services</a>
+                <a href="../services.html">Services</a>
                 <a href="../about.html">About</a>
                 <a href="../blog.html">Blog</a>
                 <a href="../contact.html">Contact</a>
@@ -945,7 +945,7 @@ module.exports = function createAdminRouter(db) {
                 <img src="images/logo-cropped.png" alt="Signature Cleans" class="nav-logo-img">
             </a>
             <div class="nav-links" id="nav-links">
-                <a href="index.html#services">Services</a>
+                <a href="services.html">Services</a>
                 <a href="about.html">About</a>
                 <a href="blog.html">Blog</a>
                 <a href="contact.html">Contact</a>
@@ -1075,6 +1075,7 @@ ${postCards}
       'about.html': 'About Us',
       'contact.html': 'Contact',
       'quote.html': 'Get a Quote',
+      'services.html': 'Services',
       'services/contract-cleaning.html': 'Contract Cleaning',
       'services/deep-cleaning.html': 'Deep Cleaning',
       'services/specialist-services.html': 'Specialist Services',
@@ -1115,7 +1116,7 @@ ${postCards}
     scanDir(publicDir, '');
 
     // Sort: main pages first
-    const order = ['index.html', 'about.html', 'contact.html', 'quote.html'];
+    const order = ['index.html', 'about.html', 'contact.html', 'quote.html', 'services.html'];
     pages.sort((a, b) => {
       const aIdx = order.indexOf(a.path);
       const bIdx = order.indexOf(b.path);
