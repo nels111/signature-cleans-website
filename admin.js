@@ -63,6 +63,36 @@ module.exports = function createAdminRouter(db) {
     )
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
+
+  // Seed default site settings if empty
+  const settingsCount = db.prepare('SELECT COUNT(*) as c FROM site_settings').get().c;
+  if (settingsCount === 0) {
+    const defaults = {
+      company_name: 'Signature Cleans',
+      phone: '01392 931035',
+      phone_link: '01392931035',
+      email: 'hello@signature-cleans.co.uk',
+      tagline: 'Peace of Mind, Every Time',
+      accreditation_1: 'SSIP Accredited',
+      accreditation_2: 'CQMS Verified',
+      linkedin_url: 'https://www.linkedin.com/company/100613310/',
+      facebook_url: 'https://www.facebook.com/profile.php?id=61554538772884',
+      address: 'Exeter, Devon',
+      copyright_text: '&copy; 2026 Signature Cleans. All rights reserved.'
+    };
+    const insert = db.prepare('INSERT INTO site_settings (key, value) VALUES (?, ?)');
+    for (const [k, v] of Object.entries(defaults)) {
+      insert.run(k, v);
+    }
+  }
+
   // ============================================
   // SESSION MANAGEMENT
   // ============================================
@@ -257,6 +287,10 @@ module.exports = function createAdminRouter(db) {
         Dashboard
       </a>
       <div class="nav-section">Content</div>
+      <a href="/admin/site-settings" class="${activeNav === 'settings' ? 'active' : ''}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        Site Settings
+      </a>
       <a href="/admin/content" class="${activeNav === 'content' ? 'active' : ''}">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
         Page Content
@@ -1049,6 +1083,222 @@ ${postCards}
 
 
   // ============================================
+  // SITE SETTINGS
+  // ============================================
+
+  function getSiteSettings() {
+    const rows = db.prepare('SELECT key, value FROM site_settings').all();
+    const settings = {};
+    for (const row of rows) {
+      settings[row.key] = row.value;
+    }
+    return settings;
+  }
+
+  // Propagate site settings across all HTML files
+  function propagateSiteSettings(settings) {
+    const publicDir = path.join(__dirname, 'public');
+
+    function processFile(filePath) {
+      let html = fs.readFileSync(filePath, 'utf-8');
+      let changed = false;
+
+      // Update phone numbers (display format)
+      const phoneDisplayRegex = /(<a\s[^>]*href="tel:[^"]*"[^>]*>)([\s\S]*?)(<\/a>)/g;
+      html = html.replace(phoneDisplayRegex, (match, open, content, close) => {
+        // Skip if content contains editable markers
+        if (content.includes('editable:')) return match;
+        // Only replace phone links that look like the old number
+        if (open.includes('tel:')) {
+          const newOpen = open.replace(/href="tel:[^"]*"/, 'href="tel:' + settings.phone_link + '"');
+          changed = true;
+          return newOpen + settings.phone + close;
+        }
+        return match;
+      });
+
+      // Update email links
+      const emailRegex = /(<a\s[^>]*href="mailto:)[^"]*("[^>]*>)([\s\S]*?)(<\/a>)/g;
+      html = html.replace(emailRegex, (match, prefix, middle, content, close) => {
+        if (content.includes('editable:')) return match;
+        changed = true;
+        return prefix + settings.email + middle + settings.email + close;
+      });
+
+      // Update footer tagline
+      if (html.includes('class="footer-tagline"')) {
+        html = html.replace(/(<p class="footer-tagline">)(.*?)(<\/p>)/g, (match, open, content, close) => {
+          changed = true;
+          return open + settings.tagline + close;
+        });
+      }
+
+      // Update footer accreditations
+      if (html.includes('class="footer-accreditations"')) {
+        html = html.replace(/(<div class="footer-accreditations">\s*<span>)(.*?)(<\/span>\s*<span>)(.*?)(<\/span>\s*<\/div>)/gs, (match, p1, a1, p2, a2, p3) => {
+          changed = true;
+          return p1 + settings.accreditation_1 + p2 + settings.accreditation_2 + p3;
+        });
+      }
+
+      // Update copyright text
+      html = html.replace(/(<div class="footer-bottom">\s*<p>)(.*?)(<\/p>)/s, (match, open, content, close) => {
+        changed = true;
+        return open + settings.copyright_text + close;
+      });
+
+      // Update social links
+      if (settings.linkedin_url) {
+        html = html.replace(/(class="footer-social"[\s\S]*?<a\s+href=")[^"]*("\s+target="_blank"[^>]*aria-label="LinkedIn")/g, (match, prefix, suffix) => {
+          changed = true;
+          return prefix + settings.linkedin_url + suffix;
+        });
+      }
+      if (settings.facebook_url) {
+        html = html.replace(/(class="footer-social"[\s\S]*?<a\s+href=")[^"]*("\s+target="_blank"[^>]*aria-label="Facebook")/g, (match, prefix, suffix) => {
+          changed = true;
+          return prefix + settings.facebook_url + suffix;
+        });
+      }
+
+      if (changed) {
+        fs.writeFileSync(filePath, html, 'utf-8');
+      }
+    }
+
+    function scanDir(dir) {
+      const files = fs.readdirSync(dir);
+      for (const f of files) {
+        const fullPath = path.join(dir, f);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory() && !['images', 'css', 'js', 'uploads'].includes(f)) {
+          scanDir(fullPath);
+        } else if (f.endsWith('.html')) {
+          processFile(fullPath);
+        }
+      }
+    }
+
+    scanDir(publicDir);
+    console.log('✓ Site settings propagated to all HTML files');
+  }
+
+  router.get('/site-settings', requireAuth, (req, res) => {
+    const settings = getSiteSettings();
+    const msg = req.query.saved === '1' ? 'Site settings saved and applied to all pages!' : null;
+
+    res.send(layout('Site Settings', `
+      ${msg ? '<div class="alert alert-success">' + msg + '</div>' : ''}
+      <div class="alert alert-info">These settings are applied globally across every page of your website. Changes here will update the footer, contact details, and social links on all pages.</div>
+
+      <form method="POST" action="/admin/site-settings/save">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>Company Details</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>Company Name</label>
+                  <input type="text" name="company_name" value="${escHTML(settings.company_name || '')}" required>
+                </div>
+                <div class="form-group">
+                  <label>Phone Number (display format)</label>
+                  <input type="text" name="phone" value="${escHTML(settings.phone || '')}" required placeholder="01392 931035">
+                  <div class="help">How the number appears on the site</div>
+                </div>
+                <div class="form-group">
+                  <label>Phone Number (link format)</label>
+                  <input type="text" name="phone_link" value="${escHTML(settings.phone_link || '')}" required placeholder="01392931035">
+                  <div class="help">No spaces — used in tel: links</div>
+                </div>
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" name="email" value="${escHTML(settings.email || '')}" required>
+                </div>
+                <div class="form-group">
+                  <label>Company Tagline</label>
+                  <input type="text" name="tagline" value="${escHTML(settings.tagline || '')}">
+                  <div class="help">Shown in the footer below the logo</div>
+                </div>
+                <div class="form-group">
+                  <label>Address / Location</label>
+                  <input type="text" name="address" value="${escHTML(settings.address || '')}">
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h3>Footer</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>Copyright Text</label>
+                  <input type="text" name="copyright_text" value="${escHTML(settings.copyright_text || '')}">
+                  <div class="help">Use &amp;copy; for the copyright symbol ©</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>Accreditations</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>Accreditation 1</label>
+                  <input type="text" name="accreditation_1" value="${escHTML(settings.accreditation_1 || '')}">
+                </div>
+                <div class="form-group">
+                  <label>Accreditation 2</label>
+                  <input type="text" name="accreditation_2" value="${escHTML(settings.accreditation_2 || '')}">
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h3>Social Media Links</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>LinkedIn URL</label>
+                  <input type="url" name="linkedin_url" value="${escHTML(settings.linkedin_url || '')}" placeholder="https://www.linkedin.com/company/...">
+                </div>
+                <div class="form-group">
+                  <label>Facebook URL</label>
+                  <input type="url" name="facebook_url" value="${escHTML(settings.facebook_url || '')}" placeholder="https://www.facebook.com/...">
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <button type="submit" class="btn btn-primary" style="width:100%;">Save & Apply to All Pages</button>
+                <div class="help" style="margin-top:8px;text-align:center;">This will update the footer, contact details, and social links on every page of the site.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    `, 'settings'));
+  });
+
+  router.post('/site-settings/save', requireAuth, (req, res) => {
+    const fields = ['company_name', 'phone', 'phone_link', 'email', 'tagline', 'address', 'copyright_text', 'accreditation_1', 'accreditation_2', 'linkedin_url', 'facebook_url'];
+    const upsert = db.prepare('INSERT INTO site_settings (key, value, updated_at) VALUES (?, ?, datetime(\'now\')) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at');
+
+    for (const field of fields) {
+      if (req.body[field] !== undefined) {
+        upsert.run(field, req.body[field]);
+      }
+    }
+
+    // Propagate to all HTML files
+    const settings = getSiteSettings();
+    propagateSiteSettings(settings);
+
+    res.redirect('/admin/site-settings?saved=1');
+  });
+
+
+  // ============================================
   // PAGE CONTENT EDITOR
   // ============================================
 
@@ -1075,13 +1325,18 @@ ${postCards}
       'about.html': 'About Us',
       'contact.html': 'Contact',
       'quote.html': 'Get a Quote',
+      'estimator.html': 'Quote Estimator',
       'services.html': 'Services',
       'services/contract-cleaning.html': 'Contract Cleaning',
       'services/deep-cleaning.html': 'Deep Cleaning',
       'services/specialist-services.html': 'Specialist Services',
       'areas/devon.html': 'Devon Area',
       'areas/cornwall.html': 'Cornwall Area',
-      'areas/somerset.html': 'Somerset Area'
+      'areas/somerset.html': 'Somerset Area',
+      'privacy.html': 'Privacy Policy',
+      'terms.html': 'Terms',
+      'cookies.html': 'Cookie Policy',
+      'thank-you.html': 'Thank You Page'
     };
     return names[pagePath] || pagePath;
   }
@@ -1099,7 +1354,7 @@ ${postCards}
         const stat = fs.statSync(fullPath);
         if (stat.isDirectory() && !['images', 'css', 'js', 'uploads', 'blog'].includes(f)) {
           scanDir(fullPath, prefix + f + '/');
-        } else if (f.endsWith('.html') && !['thank-you.html', 'privacy.html', 'cookies.html', 'terms.html', 'estimator.html', 'blog.html'].includes(f)) {
+        } else if (f.endsWith('.html') && f !== 'blog.html') {
           const content = fs.readFileSync(fullPath, 'utf-8');
           const sections = parseEditableSections(content);
           if (sections.length > 0) {
