@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
+const https = require('https');
 
 module.exports = function createAdminRouter(db) {
   const router = express.Router();
@@ -128,6 +129,19 @@ module.exports = function createAdminRouter(db) {
     const token = cookies.admin_session;
     if (token && sessions.has(token)) return next();
     return res.redirect('/admin/login');
+  }
+
+  // ============================================
+  // GOOGLE SITEMAP PING — notify Google when content changes
+  // ============================================
+  function pingGoogle() {
+    const sitemapUrl = encodeURIComponent('https://signature-cleans.co.uk/sitemap.xml');
+    const url = `https://www.google.com/ping?sitemap=${sitemapUrl}`;
+    https.get(url, (res) => {
+      console.log('✓ Google sitemap ping: HTTP ' + res.statusCode);
+    }).on('error', (err) => {
+      console.error('✗ Google sitemap ping failed:', err.message);
+    });
   }
 
   // Override CSP for admin pages (allow Quill CDN)
@@ -725,11 +739,13 @@ module.exports = function createAdminRouter(db) {
     if (post && post.published) {
       generateBlogPostHTML(post);
       regenerateBlogHub();
+      pingGoogle(); // Notify Google of new/updated content
     } else if (post && !post.published) {
       // Remove HTML file if unpublished
       const filePath = path.join(__dirname, 'public', 'blog', cleanSlug + '.html');
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       regenerateBlogHub();
+      pingGoogle(); // Notify Google of sitemap change
     }
 
     const savedId = id || db.prepare('SELECT id FROM blog_posts WHERE slug = ?').get(cleanSlug)?.id;
@@ -750,6 +766,7 @@ module.exports = function createAdminRouter(db) {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       db.prepare('DELETE FROM blog_posts WHERE id = ?').run(req.params.id);
       regenerateBlogHub();
+      pingGoogle(); // Notify Google of sitemap change
     }
     res.redirect('/admin/blog');
   });
@@ -1540,6 +1557,7 @@ ${postCards}
 
     fs.writeFileSync(fullPath, html, 'utf-8');
     console.log('✓ Page content updated: ' + pagePath);
+    pingGoogle(); // Notify Google of content change (updates lastmod in sitemap)
     res.redirect('/admin/content/edit?path=' + encodeURIComponent(pagePath) + '&saved=1');
   });
 
