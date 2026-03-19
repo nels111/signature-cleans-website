@@ -191,160 +191,294 @@ module.exports = function createAdminRouter(db) {
   // ============================================
   function layout(title, content, activeNav) {
     return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="wp-admin">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>${title} - Admin | Signature Cleans</title>
+  <title>${title} &lsaquo; Signature Cleans &mdash; Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dashicons/0.9.0/css/dashicons.min.css">
   <style>
+    /* ===== WordPress Admin Reset ===== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; }
-    .sidebar { width: 260px; background: #1a1a2e; color: white; min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column; }
-    .sidebar-brand { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-brand h2 { font-size: 18px; font-weight: 700; }
-    .sidebar-brand span { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
-    .sidebar-nav { padding: 16px 0; flex: 1; }
-    .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s; }
-    .sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
-    .sidebar-nav a.active { background: rgba(37,99,235,0.2); color: #60a5fa; border-right: 3px solid #2563eb; }
-    .sidebar-nav a svg { width: 20px; height: 20px; flex-shrink: 0; }
-    .sidebar-nav .nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.3); padding: 20px 20px 8px; }
-    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-footer a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; }
-    .sidebar-footer a:hover { color: white; }
-    .main { margin-left: 260px; flex: 1; min-height: 100vh; }
-    .topbar { background: white; padding: 16px 30px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-    .topbar h1 { font-size: 22px; font-weight: 700; color: #111827; }
-    .topbar-actions { display: flex; gap: 10px; }
-    .content { padding: 30px; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; }
-    .card-header { padding: 20px 24px; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
-    .card-header h3 { font-size: 16px; font-weight: 600; color: #111827; }
-    .card-body { padding: 24px; }
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: all 0.2s; }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-success { background: #059669; color: white; }
-    .btn-success:hover { background: #047857; }
-    .btn-danger { background: #dc2626; color: white; }
-    .btn-danger:hover { background: #b91c1c; }
-    .btn-outline { background: white; color: #374151; border: 1px solid #d1d5db; }
-    .btn-outline:hover { background: #f9fafb; }
-    .btn-sm { padding: 6px 12px; font-size: 13px; }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; transition: border-color 0.2s; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .form-group textarea { min-height: 120px; resize: vertical; }
-    .form-group .help { font-size: 12px; color: #6b7280; margin-top: 4px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .stat-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .stat-card .stat-value { font-size: 32px; font-weight: 700; color: #111827; }
-    .stat-card .stat-label { font-size: 13px; color: #6b7280; margin-top: 4px; }
-    table { width: 100%; border-collapse: collapse; }
-    table th { background: #f9fafb; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
-    table td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; font-size: 14px; vertical-align: middle; }
-    table tr:hover { background: #f9fafb; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-    .badge-green { background: #dcfce7; color: #166534; }
-    .badge-yellow { background: #fef3c7; color: #92400e; }
-    .badge-blue { background: #dbeafe; color: #1e40af; }
-    .badge-purple { background: #f3e8ff; color: #6b21a8; }
-    .badge-red { background: #fee2e2; color: #991b1b; }
-    .alert { padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
-    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .alert-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-    .media-item { position: relative; border-radius: 8px; overflow: hidden; border: 2px solid #e5e7eb; transition: border-color 0.2s; cursor: pointer; }
-    .media-item:hover { border-color: #2563eb; }
-    .media-item img { width: 100%; height: 150px; object-fit: cover; display: block; }
-    .media-item .media-info { padding: 8px 10px; font-size: 11px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .media-item .media-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+    html { background: #f0f0f1; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; font-size: 13px; line-height: 1.4em; color: #3c434a; background: #f0f0f1; min-height: 100vh; }
+
+    /* ===== WP Admin Bar ===== */
+    #wpadminbar { position: fixed; top: 0; left: 0; right: 0; height: 32px; background: #1d2327; z-index: 99999; display: flex; align-items: center; padding: 0 8px; }
+    #wpadminbar .ab-item { color: #c3c4c7; font-size: 13px; text-decoration: none; padding: 0 8px; height: 32px; display: flex; align-items: center; transition: color 0.1s; }
+    #wpadminbar .ab-item:hover { color: #72aee6; }
+    #wpadminbar .ab-site-name { font-weight: 600; margin-right: 4px; }
+    #wpadminbar .ab-site-name .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 32px; margin-right: 2px; }
+    #wpadminbar .ab-right { margin-left: auto; display: flex; align-items: center; }
+    #wpadminbar .ab-right .ab-item { font-size: 12px; }
+    #wpadminbar .sc-logo { width: 20px; height: 20px; border-radius: 50%; background: #2563eb; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 700; margin-right: 6px; }
+
+    /* ===== WP Admin Menu (Sidebar) ===== */
+    #adminmenuwrap { position: fixed; top: 32px; left: 0; bottom: 0; width: 160px; background: #1d2327; z-index: 9990; overflow-y: auto; }
+    #adminmenu { margin: 0; padding: 0; list-style: none; }
+    #adminmenu li { position: relative; }
+    #adminmenu .wp-menu-separator { height: 0; margin: 0; padding: 0; border-bottom: 1px solid #40464d; }
+    #adminmenu a { display: flex; align-items: center; padding: 0; color: #c3c4c7; text-decoration: none; font-size: 13px; line-height: 18px; transition: none; }
+    #adminmenu .wp-menu-name { padding: 8px 12px 8px 0; }
+    #adminmenu .wp-menu-image { width: 36px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    #adminmenu .wp-menu-image .dashicons { font-size: 20px; width: 20px; height: 20px; color: #a7aaad; transition: none; }
+    #adminmenu a:hover { color: #72aee6; background: #2c3338; }
+    #adminmenu a:hover .dashicons { color: #72aee6; }
+    #adminmenu .wp-menu-open > a,
+    #adminmenu .current > a { color: #fff; background: #2271b1; }
+    #adminmenu .wp-menu-open > a .dashicons,
+    #adminmenu .current > a .dashicons { color: #fff; }
+    #adminmenu .wp-menu-open > a:hover { background: #2271b1; }
+
+    /* Submenu */
+    #adminmenu .wp-submenu { display: none; list-style: none; padding: 6px 0; background: #2c3338; margin: 0; }
+    #adminmenu .wp-menu-open .wp-submenu { display: block; }
+    #adminmenu .wp-submenu a { padding: 5px 12px 5px 16px; font-size: 13px; color: #c3c4c7; background: none; }
+    #adminmenu .wp-submenu a:hover { color: #72aee6; background: none; }
+    #adminmenu .wp-submenu .current a { color: #fff; font-weight: 600; }
+
+    /* Section headers in sidebar */
+    #adminmenu .wp-menu-section-header { padding: 8px 12px 4px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #a7aaad; cursor: default; }
+
+    /* ===== WP Content Area ===== */
+    #wpcontent { margin-left: 160px; padding-top: 32px; }
+    #wpbody-content { padding: 10px 20px 20px; }
+
+    /* WP-style page title */
+    .wrap { margin: 10px 0 0; }
+    .wrap h1.wp-heading-inline { font-size: 23px; font-weight: 400; color: #1d2327; line-height: 1.3; margin: 0; padding: 9px 0 4px; display: inline-block; }
+    .wrap .page-title-action { display: inline-block; margin-left: 4px; padding: 4px 8px; position: relative; top: -3px; text-decoration: none; border: 1px solid #2271b1; border-radius: 3px; font-size: 13px; font-weight: 400; color: #2271b1; background: transparent; cursor: pointer; white-space: nowrap; }
+    .wrap .page-title-action:hover { background: #2271b1; color: #fff; }
+    .wrap hr.wp-header-end { display: block; height: 0; border: 0; border-top: 1px solid #c3c4c7; margin: 12px 0 20px; visibility: hidden; }
+
+    /* ===== WP Postbox / Cards ===== */
+    .card, .postbox { background: #fff; border: 1px solid #c3c4c7; border-radius: 0; box-shadow: 0 1px 1px rgba(0,0,0,0.04); margin-bottom: 20px; overflow: visible; }
+    .card-header, .postbox-header { padding: 8px 12px; border-bottom: 1px solid #c3c4c7; display: flex; justify-content: space-between; align-items: center; background: #fff; cursor: default; }
+    .card-header h3, .postbox-header h3, .hndle { font-size: 14px; font-weight: 600; color: #1d2327; padding: 0; margin: 0; line-height: 1.4; }
+    .card-body, .inside { padding: 12px; }
+
+    /* ===== WP Buttons ===== */
+    .btn, .button { display: inline-flex; align-items: center; gap: 4px; padding: 0 10px; min-height: 30px; border-radius: 3px; font-size: 13px; font-weight: 400; cursor: pointer; border: 1px solid #2271b1; text-decoration: none; transition: all 0.05s ease-in-out; line-height: 2.15384615; white-space: nowrap; }
+    .btn-primary, .button-primary { background: #2271b1; color: #fff; border-color: #2271b1; }
+    .btn-primary:hover, .button-primary:hover { background: #135e96; border-color: #135e96; color: #fff; }
+    .btn-success { background: #00a32a; color: #fff; border-color: #00a32a; }
+    .btn-success:hover { background: #008a20; border-color: #008a20; color: #fff; }
+    .btn-danger, .button-link-delete { background: #d63638; color: #fff; border-color: #d63638; }
+    .btn-danger:hover { background: #b32d2e; border-color: #b32d2e; color: #fff; }
+    .btn-outline, .button-secondary { background: #f6f7f7; color: #2271b1; border: 1px solid #2271b1; }
+    .btn-outline:hover, .button-secondary:hover { background: #f0f0f1; color: #135e96; border-color: #135e96; }
+    .btn-sm { padding: 0 8px; min-height: 26px; font-size: 12px; }
+
+    /* ===== WP Forms ===== */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #1d2327; margin-bottom: 5px; }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="url"],
+    .form-group input[type="password"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea { width: 100%; padding: 0 8px; height: 30px; border: 1px solid #8c8f94; border-radius: 4px; font-size: 13px; font-family: inherit; color: #2c3338; background: #fff; box-shadow: 0 0 0 transparent; transition: box-shadow 0.1s, border-color 0.1s; }
+    .form-group textarea { height: auto; min-height: 100px; padding: 6px 8px; resize: vertical; }
+    .form-group select { height: 30px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; }
+    .form-group .help, .description { font-size: 12px; color: #646970; margin-top: 4px; font-style: italic; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-table { width: 100%; border-collapse: collapse; }
+    .form-table th { text-align: left; padding: 15px 10px 15px 0; font-weight: 600; font-size: 13px; color: #1d2327; vertical-align: top; width: 200px; }
+    .form-table td { padding: 10px 0; }
+
+    /* ===== WP Stats / At a Glance ===== */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; margin-bottom: 20px; }
+    .stat-card { background: #fff; padding: 20px; border: 1px solid #c3c4c7; position: relative; }
+    .stat-card .stat-value { font-size: 28px; font-weight: 400; color: #2271b1; }
+    .stat-card .stat-label { font-size: 13px; color: #646970; margin-top: 2px; }
+    .stat-card:hover .stat-value { color: #135e96; }
+
+    /* ===== WP Tables ===== */
+    table { width: 100%; border-collapse: collapse; border-spacing: 0; }
+    table thead th, .wp-list-table thead th { background: #fff; padding: 8px 10px; text-align: left; font-size: 13px; font-weight: 400; color: #2271b1; border-bottom: 1px solid #c3c4c7; }
+    table thead th a { color: #2271b1; text-decoration: none; }
+    table td, .wp-list-table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f1; font-size: 13px; vertical-align: top; color: #50575e; }
+    table tr:hover td { background: #f6f7f7; }
+    table td strong a { color: #2271b1; text-decoration: none; font-weight: 600; font-size: 14px; }
+    table td strong a:hover { color: #135e96; }
+
+    /* Row actions (like WP hover actions) */
+    .row-actions { font-size: 12px; color: #646970; padding-top: 4px; visibility: hidden; }
+    tr:hover .row-actions { visibility: visible; }
+    .row-actions a { color: #2271b1; text-decoration: none; }
+    .row-actions a:hover { color: #135e96; }
+    .row-actions .delete a, .row-actions .trash a { color: #b32d2e; }
+    .row-actions .delete a:hover, .row-actions .trash a:hover { color: #a02525; }
+    .row-actions span { padding: 0 2px; }
+
+    /* ===== WP Badges / Status ===== */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 12px; font-weight: 400; }
+    .badge-green { background: #d4edda; color: #0a5c2f; }
+    .badge-yellow { background: #fcf9e8; color: #6e4e00; }
+    .badge-blue { background: #d5e5f6; color: #135e96; }
+    .badge-purple { background: #ede4f6; color: #5a2b82; }
+    .badge-red { background: #f9d6d6; color: #8a1919; }
+
+    /* ===== WP Notices ===== */
+    .alert, .notice { padding: 12px 16px; margin: 5px 0 15px; font-size: 13px; border-left: 4px solid; border-radius: 0; background: #fff; box-shadow: 0 1px 1px rgba(0,0,0,0.04); }
+    .alert-success, .notice-success { border-left-color: #00a32a; color: #1d2327; background: #fff; }
+    .alert-error, .notice-error { border-left-color: #d63638; color: #1d2327; background: #fff; }
+    .alert-info, .notice-info { border-left-color: #72aee6; color: #1d2327; background: #fff; }
+    .alert-warning { border-left-color: #dba617; color: #1d2327; background: #fff; }
+
+    /* ===== Media Grid ===== */
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .media-item { position: relative; border: 3px solid #f0f0f1; overflow: hidden; cursor: pointer; background: #fff; }
+    .media-item:hover { border-color: #2271b1; }
+    .media-item img { width: 100%; height: 120px; object-fit: cover; display: block; }
+    .media-item .media-info { padding: 6px 8px; font-size: 11px; color: #646970; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-item .media-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
     .media-item:hover .media-actions { opacity: 1; }
-    .media-item .media-actions button { padding: 4px 8px; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
-    .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
-    .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state h3 { font-size: 16px; color: #6b7280; margin-bottom: 8px; }
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .media-item .media-actions button { padding: 2px 6px; border-radius: 2px; border: none; cursor: pointer; font-size: 11px; }
+
+    /* ===== WP Empty State ===== */
+    .empty-state { text-align: center; padding: 40px 20px; color: #646970; }
+    .empty-state h3 { font-size: 14px; color: #3c434a; margin-bottom: 6px; font-weight: 400; }
+
+    /* ===== WP Toggle / Switch ===== */
+    .switch { position: relative; display: inline-block; width: 36px; height: 18px; }
     .switch input { opacity: 0; width: 0; height: 0; }
-    .switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #d1d5db; border-radius: 24px; transition: 0.3s; }
-    .switch .slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-    .switch input:checked + .slider { background: #2563eb; }
-    .switch input:checked + .slider:before { transform: translateX(20px); }
-    .pagination { display: flex; gap: 6px; justify-content: center; margin-top: 24px; }
-    .pagination a { padding: 8px 14px; border-radius: 6px; text-decoration: none; color: #374151; background: white; border: 1px solid #d1d5db; font-size: 13px; }
-    .pagination a.active { background: #2563eb; color: white; border-color: #2563eb; }
-    #editor-container { height: 400px; background: white; }
-    .ql-editor { min-height: 350px; font-size: 15px; line-height: 1.7; }
-    .ql-toolbar { background: #f9fafb; border-bottom: 1px solid #d1d5db !important; }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
+    .switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #8c8f94; border-radius: 18px; transition: 0.2s; }
+    .switch .slider:before { content: ''; position: absolute; height: 14px; width: 14px; left: 2px; bottom: 2px; background: white; border-radius: 50%; transition: 0.2s; }
+    .switch input:checked + .slider { background: #2271b1; }
+    .switch input:checked + .slider:before { transform: translateX(18px); }
+
+    /* ===== WP Pagination ===== */
+    .pagination, .tablenav-pages { display: flex; gap: 4px; align-items: center; margin-top: 12px; }
+    .pagination a { padding: 4px 8px; border: 1px solid #c3c4c7; background: #f6f7f7; color: #2271b1; text-decoration: none; font-size: 13px; min-width: 28px; text-align: center; }
+    .pagination a:hover { border-color: #2271b1; color: #135e96; }
+    .pagination a.active, .pagination .current { background: #2271b1; color: #fff; border-color: #2271b1; }
+
+    /* ===== Quill Editor (WP-ified) ===== */
+    #editor-container { min-height: 400px; background: white; border: 1px solid #8c8f94; border-top: none; }
+    .ql-editor { min-height: 350px; font-size: 14px; line-height: 1.7; color: #1d2327; }
+    .ql-toolbar { background: #fff; border: 1px solid #8c8f94 !important; border-bottom: 1px solid #dcdcde !important; }
+
+    /* ===== Dashboard Welcome Panel ===== */
+    .welcome-panel { background: #fff; border: 1px solid #c3c4c7; margin: 0 0 20px; padding: 23px 20px 12px; overflow: auto; }
+    .welcome-panel h2 { margin: 0 0 8px; font-size: 21px; font-weight: 400; line-height: 1.2; color: #1d2327; }
+    .welcome-panel p { font-size: 14px; color: #646970; }
+
+    /* ===== WP Tablenav ===== */
+    .tablenav { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #646970; }
+    .tablenav .displaying-num { font-size: 13px; color: #646970; font-style: italic; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 782px) {
+      #adminmenuwrap { width: 36px; overflow: hidden; }
+      #adminmenu .wp-menu-name { display: none; }
+      #adminmenu .wp-submenu { display: none !important; }
+      #wpcontent { margin-left: 36px; }
       .form-row { grid-template-columns: 1fr; }
+      .wrap h1.wp-heading-inline { font-size: 18px; }
+      #wpbody-content { padding: 10px; }
+    }
+    @media (max-width: 600px) {
+      #wpadminbar { position: absolute; }
+      #adminmenuwrap { display: none; }
+      #wpcontent { margin-left: 0; }
     }
   </style>
 </head>
-<body>
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <h2>Signature Cleans</h2>
-      <span>Admin Panel</span>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Overview</div>
-      <a href="/admin/dashboard" class="${activeNav === 'dashboard' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        Dashboard
-      </a>
-      <div class="nav-section">Content</div>
-      <a href="/admin/site-settings" class="${activeNav === 'settings' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-        Site Settings
-      </a>
-      <a href="/admin/content" class="${activeNav === 'content' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        Page Content
-      </a>
-      <a href="/admin/blog" class="${activeNav === 'blog' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-        Blog Posts
-      </a>
-      <a href="/admin/media" class="${activeNav === 'media' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        Media Library
-      </a>
-      <div class="nav-section">SEO</div>
-      <a href="/admin/pages" class="${activeNav === 'pages' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        Pages & SEO
-      </a>
-      <a href="/admin/head-tags" class="${activeNav === 'headtags' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-        Head Tags
-      </a>
-      <div class="nav-section">Data</div>
-      <a href="/admin/submissions" class="${activeNav === 'submissions' ? 'active' : ''}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-        Submissions
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <a href="/" target="_blank">View Site</a> &nbsp;|&nbsp; <a href="/admin/logout">Logout</a>
-    </div>
-  </aside>
-  <div class="main">
-    <div class="topbar">
-      <h1>${title}</h1>
-      <div class="topbar-actions" id="topbar-actions"></div>
-    </div>
-    <div class="content">
-      ${content}
+<body class="wp-admin">
+  <!-- WP Admin Bar -->
+  <div id="wpadminbar">
+    <div class="sc-logo">SC</div>
+    <a href="/admin/dashboard" class="ab-item ab-site-name">Signature Cleans</a>
+    <a href="/" target="_blank" class="ab-item"><span class="dashicons dashicons-admin-home" style="font-size:14px;line-height:32px;"></span> Visit Site</a>
+    <div class="ab-right">
+      <a href="/admin/logout" class="ab-item">Log Out</a>
     </div>
   </div>
+
+  <!-- WP Admin Menu -->
+  <div id="adminmenuwrap">
+    <ul id="adminmenu">
+      <li class="${activeNav === 'dashboard' ? 'current wp-menu-open' : ''}">
+        <a href="/admin/dashboard">
+          <div class="wp-menu-image"><span class="dashicons dashicons-dashboard"></span></div>
+          <div class="wp-menu-name">Dashboard</div>
+        </a>
+      </li>
+      <li class="wp-menu-separator"></li>
+      <li class="${activeNav === 'blog' ? 'current wp-menu-open' : ''}">
+        <a href="/admin/blog">
+          <div class="wp-menu-image"><span class="dashicons dashicons-admin-post"></span></div>
+          <div class="wp-menu-name">Posts</div>
+        </a>
+        <ul class="wp-submenu">
+          <li class="${activeNav === 'blog' ? 'current' : ''}"><a href="/admin/blog">All Posts</a></li>
+          <li><a href="/admin/blog/new">Add New</a></li>
+        </ul>
+      </li>
+      <li class="${activeNav === 'media' ? 'current wp-menu-open' : ''}">
+        <a href="/admin/media">
+          <div class="wp-menu-image"><span class="dashicons dashicons-admin-media"></span></div>
+          <div class="wp-menu-name">Media</div>
+        </a>
+      </li>
+      <li class="${activeNav === 'content' ? 'current wp-menu-open' : ''}">
+        <a href="/admin/content">
+          <div class="wp-menu-image"><span class="dashicons dashicons-admin-page"></span></div>
+          <div class="wp-menu-name">Pages</div>
+        </a>
+        <ul class="wp-submenu">
+          <li class="${activeNav === 'content' ? 'current' : ''}"><a href="/admin/content">All Pages</a></li>
+          <li class="${activeNav === 'pages' ? 'current' : ''}"><a href="/admin/pages">SEO</a></li>
+        </ul>
+      </li>
+      <li class="wp-menu-separator"></li>
+      <li class="${activeNav === 'submissions' ? 'current wp-menu-open' : ''}">
+        <a href="/admin/submissions">
+          <div class="wp-menu-image"><span class="dashicons dashicons-email"></span></div>
+          <div class="wp-menu-name">Enquiries</div>
+        </a>
+      </li>
+      <li class="wp-menu-separator"></li>
+      <li class="${activeNav === 'settings' ? 'current wp-menu-open' : ''}">
+        <a href="/admin/site-settings">
+          <div class="wp-menu-image"><span class="dashicons dashicons-admin-settings"></span></div>
+          <div class="wp-menu-name">Settings</div>
+        </a>
+        <ul class="wp-submenu">
+          <li class="${activeNav === 'settings' ? 'current' : ''}"><a href="/admin/site-settings">General</a></li>
+          <li class="${activeNav === 'headtags' ? 'current' : ''}"><a href="/admin/head-tags">Head Tags</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <!-- WP Content -->
+  <div id="wpcontent">
+    <div id="wpbody-content">
+      <div class="wrap">
+        ${content}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // WP-style sidebar toggle for submenu
+    document.querySelectorAll('#adminmenu > li > a').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        var li = this.parentElement;
+        var submenu = li.querySelector('.wp-submenu');
+        if (submenu && !li.classList.contains('current')) {
+          // Let it navigate but add open class for visual feedback
+          li.classList.add('wp-menu-open');
+        }
+      });
+    });
+  </script>
 </body>
 </html>`;
   }
@@ -361,35 +495,37 @@ module.exports = function createAdminRouter(db) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Admin Login - Signature Cleans</title>
+  <title>Log In &lsaquo; Signature Cleans</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: #1a1a2e; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .login-card { background: white; border-radius: 16px; padding: 40px; width: 400px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-    .login-card h1 { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 8px; }
-    .login-card p { color: #6b7280; font-size: 14px; margin-bottom: 30px; }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
-    .form-group input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .btn:hover { background: #1d4ed8; }
-    .error { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; background: #f0f0f1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .login-logo { margin-bottom: 20px; text-align: center; }
+    .login-logo h1 { font-size: 20px; font-weight: 400; color: #3c434a; }
+    .login-logo .sc-badge { width: 84px; height: 84px; border-radius: 50%; background: #2271b1; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: 700; margin: 0 auto 12px; }
+    #loginform { background: #fff; border: 1px solid #c3c4c7; box-shadow: 0 1px 3px rgba(0,0,0,0.04); padding: 26px 24px 34px; width: 320px; max-width: 90vw; }
+    .login-label { display: block; font-size: 14px; font-weight: 600; color: #1d2327; margin-bottom: 3px; }
+    .login-input { width: 100%; padding: 0 8px; height: 34px; border: 1px solid #8c8f94; border-radius: 4px; font-size: 14px; margin-bottom: 16px; }
+    .login-input:focus { outline: none; border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; }
+    .login-submit { width: 100%; padding: 0 12px; min-height: 36px; background: #2271b1; color: #fff; border: 1px solid #2271b1; border-radius: 3px; font-size: 14px; cursor: pointer; }
+    .login-submit:hover { background: #135e96; border-color: #135e96; }
+    .login-error { background: #fff; border-left: 4px solid #d63638; padding: 12px; margin-bottom: 16px; font-size: 13px; color: #1d2327; box-shadow: 0 1px 1px rgba(0,0,0,0.04); width: 320px; }
+    .back-to-site { margin-top: 20px; font-size: 13px; }
+    .back-to-site a { color: #2271b1; text-decoration: none; }
+    .back-to-site a:hover { color: #135e96; text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <h1>Admin Panel</h1>
-    <p>Signature Cleans Content Management</p>
-    ${error ? '<div class="error">' + error + '</div>' : ''}
-    <form method="POST" action="/admin/login">
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password" placeholder="Enter admin password" required autofocus>
-      </div>
-      <button type="submit" class="btn">Sign In</button>
-    </form>
+  <div class="login-logo">
+    <div class="sc-badge">SC</div>
+    <h1>Signature Cleans</h1>
   </div>
+  ${error ? '<div class="login-error">' + error + '</div>' : ''}
+  <form method="POST" action="/admin/login" id="loginform">
+    <label class="login-label" for="pass">Password</label>
+    <input type="password" name="password" id="pass" class="login-input" placeholder="" required autofocus>
+    <button type="submit" class="login-submit">Log In</button>
+  </form>
+  <p class="back-to-site"><a href="/">&larr; Go to Signature Cleans</a></p>
 </body>
 </html>`);
   });
@@ -432,62 +568,88 @@ module.exports = function createAdminRouter(db) {
     const recentSubs = db.prepare('SELECT * FROM submissions ORDER BY createdAt DESC LIMIT 5').all();
 
     res.send(layout('Dashboard', `
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value">${totalSubs}</div>
-          <div class="stat-label">Total Submissions</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${quotes}</div>
-          <div class="stat-label">Quote Requests</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${contacts}</div>
-          <div class="stat-label">Contact Messages</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${publishedCount}/${blogCount}</div>
-          <div class="stat-label">Published Blog Posts</div>
+      <h1 class="wp-heading-inline">Dashboard</h1>
+      <hr class="wp-header-end">
+
+      <div class="welcome-panel">
+        <h2>Welcome to Signature Cleans!</h2>
+        <p style="margin-bottom:16px;">Here are some quick links to get you started:</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="/admin/blog/new" class="btn btn-primary">Write a New Post</a>
+          <a href="/admin/content" class="btn btn-outline">Edit Pages</a>
+          <a href="/admin/media" class="btn btn-outline">Upload Media</a>
+          <a href="/admin/pages" class="btn btn-outline">Manage SEO</a>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h3>Recent Submissions</h3>
-          <a href="/admin/submissions" class="btn btn-outline btn-sm">View All</a>
-        </div>
-        ${recentSubs.length > 0 ? `<table>
-          <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th><th>Details</th></tr></thead>
-          <tbody>
-            ${recentSubs.map(s => `<tr>
-              <td><span class="badge ${s.type === 'quote' ? 'badge-blue' : 'badge-purple'}">${s.type}</span></td>
-              <td>${new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
-              <td>${s.name}</td>
-              <td><a href="mailto:${s.email}">${s.email}</a></td>
-              <td>${s.serviceType || s.message?.substring(0, 50) || '-'}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>` : '<div class="card-body"><div class="empty-state"><h3>No submissions yet</h3></div></div>'}
-      </div>
+      <div id="dashboard-widgets" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <div class="postbox">
+            <div class="postbox-header"><h3 class="hndle">At a Glance</h3></div>
+            <div class="inside">
+              <ul style="list-style:none;padding:0;margin:0;">
+                <li style="padding:6px 0;border-bottom:1px solid #f0f0f1;">
+                  <span class="dashicons dashicons-email" style="color:#646970;margin-right:6px;font-size:16px;vertical-align:middle;"></span>
+                  <a href="/admin/submissions" style="color:#2271b1;text-decoration:none;font-size:14px;">${totalSubs} Enquiries</a>
+                </li>
+                <li style="padding:6px 0;border-bottom:1px solid #f0f0f1;">
+                  <span class="dashicons dashicons-format-quote" style="color:#646970;margin-right:6px;font-size:16px;vertical-align:middle;"></span>
+                  <span style="font-size:14px;">${quotes} Quote Requests</span>
+                </li>
+                <li style="padding:6px 0;border-bottom:1px solid #f0f0f1;">
+                  <span class="dashicons dashicons-email-alt" style="color:#646970;margin-right:6px;font-size:16px;vertical-align:middle;"></span>
+                  <span style="font-size:14px;">${contacts} Contact Messages</span>
+                </li>
+                <li style="padding:6px 0;">
+                  <span class="dashicons dashicons-admin-post" style="color:#646970;margin-right:6px;font-size:16px;vertical-align:middle;"></span>
+                  <a href="/admin/blog" style="color:#2271b1;text-decoration:none;font-size:14px;">${publishedCount} Published Posts</a>
+                  ${blogCount - publishedCount > 0 ? '<span style="color:#646970;font-size:13px;"> (' + (blogCount - publishedCount) + ' drafts)</span>' : ''}
+                </li>
+              </ul>
+            </div>
+          </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        <div class="card">
-          <div class="card-header"><h3>Quick Actions</h3></div>
-          <div class="card-body">
-            <a href="/admin/content" class="btn btn-primary" style="margin-bottom:10px;display:block;text-align:center;">Edit Page Content</a>
-            <a href="/admin/blog/new" class="btn btn-outline" style="margin-bottom:10px;display:block;text-align:center;">New Blog Post</a>
-            <a href="/admin/media" class="btn btn-outline" style="margin-bottom:10px;display:block;text-align:center;">Upload Media</a>
-            <a href="/admin/pages" class="btn btn-outline" style="display:block;text-align:center;">Edit Page SEO</a>
+          <div class="postbox">
+            <div class="postbox-header"><h3 class="hndle">Quick Draft</h3></div>
+            <div class="inside">
+              <p style="color:#646970;margin-bottom:12px;">Create a new blog post quickly:</p>
+              <form method="GET" action="/admin/blog/new">
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                  <span class="dashicons dashicons-plus-alt" style="font-size:16px;line-height:inherit;"></span>
+                  New Blog Post
+                </button>
+              </form>
+            </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><h3>Help</h3></div>
-          <div class="card-body" style="font-size:14px;color:#6b7280;line-height:1.8;">
-            <p><strong>Page Content</strong> — Edit text and content on any page of the site</p>
-            <p><strong>Blog Posts</strong> — Create and manage blog articles with images</p>
-            <p><strong>Pages & SEO</strong> — Edit meta titles and descriptions for all pages</p>
-            <p><strong>Head Tags</strong> — Add Google verification, analytics, or custom tags</p>
-            <p><strong>Media Library</strong> — Upload and manage images for blog posts</p>
+
+        <div>
+          <div class="postbox">
+            <div class="postbox-header">
+              <h3 class="hndle">Recent Enquiries</h3>
+              <a href="/admin/submissions" style="font-size:12px;color:#2271b1;text-decoration:none;">View all</a>
+            </div>
+            ${recentSubs.length > 0 ? `<table>
+              <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th></tr></thead>
+              <tbody>
+                ${recentSubs.map(s => `<tr>
+                  <td><span class="badge ${s.type === 'quote' ? 'badge-blue' : 'badge-purple'}">${s.type}</span></td>
+                  <td>${new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
+                  <td>${s.name}</td>
+                  <td><a href="mailto:${s.email}" style="color:#2271b1;text-decoration:none;">${s.email}</a></td>
+                </tr>`).join('')}
+              </tbody>
+            </table>` : '<div class="inside"><p style="color:#646970;">No enquiries yet.</p></div>'}
+          </div>
+
+          <div class="postbox">
+            <div class="postbox-header"><h3 class="hndle">Help</h3></div>
+            <div class="inside" style="font-size:13px;color:#646970;line-height:1.8;">
+              <p><strong>Posts</strong> &mdash; Create and manage blog articles</p>
+              <p><strong>Pages</strong> &mdash; Edit text and content on any page</p>
+              <p><strong>Media</strong> &mdash; Upload and manage images</p>
+              <p><strong>SEO</strong> &mdash; Edit meta titles and descriptions</p>
+              <p><strong>Settings</strong> &mdash; Update company details and site settings</p>
           </div>
         </div>
       </div>
@@ -503,71 +665,55 @@ module.exports = function createAdminRouter(db) {
     const unmanagedFiles = getUnmanagedBlogFiles();
     const importedMsg = req.query.imported ? `<div class="alert alert-success">${req.query.imported} blog post(s) imported successfully! You can now edit them below.</div>` : '';
 
-    res.send(layout('Blog Posts', `
+    res.send(layout('Posts', `
+      <h1 class="wp-heading-inline">Posts</h1>
+      <a href="/admin/blog/new" class="page-title-action">Add New</a>
+      <hr class="wp-header-end">
+
       ${importedMsg}
 
       ${unmanagedFiles.length > 0 ? `
-      <div class="card" style="border:2px solid #f59e0b;margin-bottom:24px;">
-        <div class="card-header" style="background:#fffbeb;"><h3 style="color:#92400e;">Existing Blog Posts Need Importing</h3></div>
-        <div class="card-body">
-          <p style="color:#92400e;margin-bottom:16px;">${unmanagedFiles.length} blog post(s) exist as static files but aren't in the admin system yet. Import them to enable full editing (content, SEO, images, etc).</p>
-          <form method="POST" action="/admin/blog/import" style="margin-bottom:16px;">
-            <button type="submit" class="btn btn-primary">Import All ${unmanagedFiles.length} Posts</button>
-          </form>
-          <details>
-            <summary style="cursor:pointer;color:#6b7280;font-size:13px;">Or import individually...</summary>
-            <div style="margin-top:12px;">
-              ${unmanagedFiles.map(f => {
-                const slug = f.replace('.html', '');
-                return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e5e7eb;">
-                  <span style="font-size:13px;">${slug}</span>
-                  <form method="POST" action="/admin/blog/import/${slug}" style="display:inline;">
-                    <button type="submit" class="btn btn-outline btn-sm">Import</button>
-                  </form>
-                </div>`;
-              }).join('')}
-            </div>
-          </details>
-        </div>
+      <div class="alert alert-warning">
+        <strong>${unmanagedFiles.length} existing blog post(s)</strong> were found as static files but aren't in the system yet.
+        <form method="POST" action="/admin/blog/import" style="display:inline;margin-left:8px;">
+          <button type="submit" class="btn btn-primary btn-sm">Import All</button>
+        </form>
       </div>` : ''}
 
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <p style="color:#6b7280;">${posts.length} blog post${posts.length !== 1 ? 's' : ''}</p>
-        <a href="/admin/blog/new" class="btn btn-primary">+ New Post</a>
+      <div class="tablenav">
+        <div class="displaying-num">${posts.length} item${posts.length !== 1 ? 's' : ''}</div>
       </div>
 
       ${posts.length > 0 ? `
-      <div class="card">
-        <table>
-          <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody>
-            ${posts.map(p => `<tr>
-              <td>
-                <strong>${p.title}</strong>
-                <div style="font-size:12px;color:#6b7280;">/${p.slug}</div>
-              </td>
-              <td><span class="badge badge-blue">${p.category}</span></td>
-              <td><span class="badge ${p.published ? 'badge-green' : 'badge-yellow'}">${p.published ? 'Published' : 'Draft'}</span></td>
-              <td>${new Date(p.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-              <td>
-                <a href="/admin/blog/edit/${p.id}" class="btn btn-outline btn-sm">Edit</a>
-                ${p.published ? '<a href="/blog/' + p.slug + '.html" target="_blank" class="btn btn-outline btn-sm">View</a>' : ''}
-                <form method="POST" action="/admin/blog/delete/${p.id}" style="display:inline;" onsubmit="return confirm('Delete this post?')">
-                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-              </td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>` : `
-      <div class="card">
-        <div class="card-body">
-          <div class="empty-state">
-            <h3>No blog posts yet</h3>
-            <p>Create your first blog post to get started.</p>
-            <a href="/admin/blog/new" class="btn btn-primary" style="margin-top:16px;">Create Blog Post</a>
-          </div>
-        </div>
+      <table class="wp-list-table widefat striped">
+        <thead>
+          <tr>
+            <th style="width:45%;">Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${posts.map(p => `<tr>
+            <td>
+              <strong><a href="/admin/blog/edit/${p.id}">${p.title}</a></strong>
+              <div class="row-actions">
+                <span class="edit"><a href="/admin/blog/edit/${p.id}">Edit</a> | </span>
+                ${p.published ? '<span class="view"><a href="/blog/' + p.slug + '.html" target="_blank">View</a> | </span>' : ''}
+                <span class="trash"><a href="#" onclick="if(confirm('Move to Trash?')){document.getElementById('del-${p.id}').submit()}return false">Trash</a></span>
+                <form id="del-${p.id}" method="POST" action="/admin/blog/delete/${p.id}" style="display:none;"></form>
+              </div>
+            </td>
+            <td>${p.category}</td>
+            <td>${p.published ? '<span style="color:#00a32a;">Published</span>' : '<span style="color:#dba617;">Draft</span>'}</td>
+            <td>${new Date(p.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : `
+      <div style="padding:40px 0;text-align:center;color:#646970;">
+        <p>No posts found.</p>
+        <a href="/admin/blog/new" class="btn btn-primary" style="margin-top:12px;">Add Your First Post</a>
       </div>`}
     `, 'blog'));
   });
@@ -578,107 +724,118 @@ module.exports = function createAdminRouter(db) {
   function blogEditorPage(post, isNew, msg) {
     const p = post || { title: '', slug: '', excerpt: '', content: '', category: 'General', read_time: '5 min read', featured_image: '', meta_title: '', meta_description: '', published: 0, featured: 0 };
 
-    return layout(isNew ? 'New Blog Post' : 'Edit Blog Post', `
+    return layout(isNew ? 'Add New Post' : 'Edit Post', `
+      <h1 class="wp-heading-inline">${isNew ? 'Add New Post' : 'Edit Post'}</h1>
+      <hr class="wp-header-end">
       ${msg ? '<div class="alert alert-success">' + msg + '</div>' : ''}
+
       <form method="POST" action="/admin/blog/save${isNew ? '' : '/' + p.id}" enctype="multipart/form-data" id="blog-form">
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;">
           <div>
-            <div class="card">
-              <div class="card-header"><h3>Content</h3></div>
-              <div class="card-body">
-                <div class="form-group">
-                  <label>Title</label>
-                  <input type="text" name="title" value="${(p.title || '').replace(/"/g, '&quot;')}" required placeholder="Post title" oninput="if(!document.getElementById('slug-edited').checked){document.getElementById('slug').value=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}">
-                </div>
-                <div class="form-group">
-                  <label>Content</label>
-                  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
-                  <div id="editor-container">${p.content || ''}</div>
-                  <input type="hidden" name="content" id="content-input">
-                </div>
+            <!-- Title (WP-style large input) -->
+            <div style="margin-bottom:12px;">
+              <input type="text" name="title" value="${(p.title || '').replace(/"/g, '&quot;')}" required placeholder="Enter title here" style="width:100%;padding:3px 8px;font-size:1.7em;line-height:1.2em;height:1.7em;border:1px solid #8c8f94;border-radius:0;outline:none;font-weight:400;color:#1d2327;" oninput="if(!document.getElementById('slug-edited').checked){document.getElementById('slug').value=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}">
+            </div>
+            <div style="font-size:12px;color:#646970;margin-bottom:16px;">
+              <strong>Permalink:</strong> /blog/<input type="text" name="slug" id="slug" value="${(p.slug || '').replace(/"/g, '&quot;')}" required style="width:200px;padding:2px 6px;font-size:12px;border:1px solid #8c8f94;height:24px;" placeholder="post-url-slug">
+              <label style="margin-left:8px;font-size:11px;color:#646970;"><input type="checkbox" id="slug-edited" style="margin-right:3px;">Edit</label>
+            </div>
+
+            <!-- Content Editor -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">Content</h3></div>
+              <div class="inside" style="padding:0;">
+                <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+                <div id="editor-container">${p.content || ''}</div>
+                <input type="hidden" name="content" id="content-input">
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-header"><h3>SEO</h3></div>
-              <div class="card-body">
+            <!-- Excerpt -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">Excerpt</h3></div>
+              <div class="inside">
+                <textarea name="excerpt" rows="3" placeholder="Write a brief summary for the blog listing" style="width:100%;">${p.excerpt || ''}</textarea>
+                <p class="description">Excerpts are short summaries of your posts.</p>
+              </div>
+            </div>
+
+            <!-- SEO -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">SEO Settings</h3></div>
+              <div class="inside">
                 <div class="form-group">
-                  <label>Meta Title <span style="font-weight:400;color:#9ca3af;">(leave blank to use post title)</span></label>
-                  <input type="text" name="meta_title" value="${(p.meta_title || '').replace(/"/g, '&quot;')}" placeholder="Custom meta title for search engines">
-                  <div class="help">Recommended: 50-60 characters</div>
+                  <label>SEO Title <span style="font-weight:400;color:#646970;">(leave blank to use post title)</span></label>
+                  <input type="text" name="meta_title" value="${(p.meta_title || '').replace(/"/g, '&quot;')}" placeholder="Custom title for search engines">
+                  <p class="description">Recommended: 50-60 characters</p>
                 </div>
                 <div class="form-group">
                   <label>Meta Description</label>
                   <textarea name="meta_description" rows="3" placeholder="Brief description for search results">${p.meta_description || ''}</textarea>
-                  <div class="help">Recommended: 150-160 characters</div>
+                  <p class="description">Recommended: 150-160 characters</p>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Sidebar -->
           <div>
-            <div class="card">
-              <div class="card-header"><h3>Publish</h3></div>
-              <div class="card-body">
-                <div class="form-group">
-                  <label style="display:flex;align-items:center;gap:10px;">
-                    <span class="switch">
-                      <input type="checkbox" name="published" value="1" ${p.published ? 'checked' : ''}>
-                      <span class="slider"></span>
-                    </span>
-                    Published
+            <!-- Publish Box -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">Publish</h3></div>
+              <div class="inside">
+                <div style="padding:8px 0;border-bottom:1px solid #f0f0f1;margin-bottom:8px;">
+                  <span class="dashicons dashicons-visibility" style="font-size:16px;color:#646970;vertical-align:middle;margin-right:4px;"></span>
+                  <strong>Status:</strong>
+                  <span style="color:${p.published ? '#00a32a' : '#dba617'};">${p.published ? 'Published' : 'Draft'}</span>
+                </div>
+                <div style="padding:8px 0;margin-bottom:12px;">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" name="published" value="1" ${p.published ? 'checked' : ''} style="width:auto;height:auto;">
+                    Publish immediately
                   </label>
                 </div>
-                <div class="form-group">
-                  <label style="display:flex;align-items:center;gap:10px;">
-                    <span class="switch">
-                      <input type="checkbox" name="featured" value="1" ${p.featured ? 'checked' : ''}>
-                      <span class="slider"></span>
-                    </span>
-                    Featured Post
+                <div style="padding:8px 0;margin-bottom:12px;">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" name="featured" value="1" ${p.featured ? 'checked' : ''} style="width:auto;height:auto;">
+                    Featured post
                   </label>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">${isNew ? 'Create Post' : 'Save Changes'}</button>
-                <a href="/admin/blog" class="btn btn-outline" style="width:100%;margin-top:8px;text-align:center;">Cancel</a>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header"><h3>Details</h3></div>
-              <div class="card-body">
-                <div class="form-group">
-                  <label>URL Slug</label>
-                  <input type="text" name="slug" id="slug" value="${(p.slug || '').replace(/"/g, '&quot;')}" required placeholder="post-url-slug">
-                  <label style="font-size:12px;color:#9ca3af;margin-top:4px;"><input type="checkbox" id="slug-edited"> Custom slug</label>
-                </div>
-                <div class="form-group">
-                  <label>Category</label>
-                  <select name="category">
-                    ${['General', 'Operations', 'Sustainability', 'Process', 'Healthcare', 'Workplace', 'Service Guide', 'Sector Guide', 'Quality Management', 'Business Insight', 'Procurement Guide', 'Industry Guide', 'Accreditations'].map(c =>
-                      '<option' + (p.category === c ? ' selected' : '') + '>' + c + '</option>'
-                    ).join('')}
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Read Time</label>
-                  <input type="text" name="read_time" value="${(p.read_time || '5 min read').replace(/"/g, '&quot;')}" placeholder="5 min read">
-                </div>
-                <div class="form-group">
-                  <label>Excerpt</label>
-                  <textarea name="excerpt" rows="3" placeholder="Brief summary for blog listing">${p.excerpt || ''}</textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #f0f0f1;">
+                  <a href="/admin/blog" style="color:#b32d2e;text-decoration:none;font-size:12px;">Cancel</a>
+                  <button type="submit" class="btn btn-primary">${isNew ? 'Publish' : 'Update'}</button>
                 </div>
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-header"><h3>Featured Image</h3></div>
-              <div class="card-body">
-                ${p.featured_image ? '<img src="' + p.featured_image + '" style="width:100%;border-radius:8px;margin-bottom:12px;" alt="Featured">' : ''}
-                <div class="form-group">
-                  <input type="file" name="featured_image" accept="image/*" style="font-size:13px;">
-                  <div class="help">Or enter URL below:</div>
-                  <input type="text" name="featured_image_url" value="${(p.featured_image || '').replace(/"/g, '&quot;')}" placeholder="/images/uploads/photo.jpg" style="margin-top:6px;">
-                </div>
+            <!-- Categories -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">Category</h3></div>
+              <div class="inside">
+                <select name="category" style="width:100%;">
+                  ${['General', 'Operations', 'Sustainability', 'Process', 'Healthcare', 'Workplace', 'Service Guide', 'Sector Guide', 'Quality Management', 'Business Insight', 'Procurement Guide', 'Industry Guide', 'Accreditations'].map(c =>
+                    '<option' + (p.category === c ? ' selected' : '') + '>' + c + '</option>'
+                  ).join('')}
+                </select>
+              </div>
+            </div>
+
+            <!-- Read Time -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">Read Time</h3></div>
+              <div class="inside">
+                <input type="text" name="read_time" value="${(p.read_time || '5 min read').replace(/"/g, '&quot;')}" placeholder="5 min read" style="width:100%;">
+              </div>
+            </div>
+
+            <!-- Featured Image -->
+            <div class="postbox">
+              <div class="postbox-header"><h3 class="hndle">Featured Image</h3></div>
+              <div class="inside">
+                ${p.featured_image ? '<img src="' + p.featured_image + '" style="width:100%;margin-bottom:10px;" alt="Featured">' : '<p style="color:#646970;margin-bottom:10px;">No featured image set.</p>'}
+                <input type="file" name="featured_image" accept="image/*" style="font-size:12px;margin-bottom:8px;">
+                <p class="description">Or enter image URL:</p>
+                <input type="text" name="featured_image_url" value="${(p.featured_image || '').replace(/"/g, '&quot;')}" placeholder="/images/uploads/photo.jpg" style="margin-top:4px;">
               </div>
             </div>
           </div>
