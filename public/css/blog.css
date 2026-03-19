@@ -405,6 +405,20 @@
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
+/* First paragraph auto-intro style (for Quill-generated content without .post-intro class) */
+.post-content > p:first-child {
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: var(--color-secondary);
+}
+
+/* Quill empty line cleanup */
+.post-content p br:only-child {
+    display: block;
+    content: '';
+    margin-top: 0.5rem;
+}
+
 /* Featured image in post */
 .blog-post .container > img {
     max-width: 720px;
@@ -418,7 +432,6 @@
    RESPONSIVE - BLOG LISTING
    ============================================ */
 
-/* Responsive */
 @media (max-width: 900px) {
     .blog-card.featured {
         grid-column: span 1;
@@ -453,15 +466,19 @@
 
 @media (max-width: 768px) {
     .blog-post {
-        padding: 120px 0 var(--space-lg);
+        padding: 130px 0 var(--space-lg);
+    }
+
+    .blog-post .container {
+        padding: 0 var(--space-sm);
     }
 
     .post-header {
-        padding: 0 var(--space-sm);
+        padding: 0;
     }
 
     .post-content {
-        padding: 0 var(--space-sm);
+        padding: 0;
         font-size: 1rem;
     }
 
