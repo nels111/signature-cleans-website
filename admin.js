@@ -500,8 +500,37 @@ module.exports = function createAdminRouter(db) {
   // ============================================
   router.get('/blog', requireAuth, (req, res) => {
     const posts = db.prepare('SELECT * FROM blog_posts ORDER BY created_at DESC').all();
+    const unmanagedFiles = getUnmanagedBlogFiles();
+    const importedMsg = req.query.imported ? `<div class="alert alert-success">${req.query.imported} blog post(s) imported successfully! You can now edit them below.</div>` : '';
 
     res.send(layout('Blog Posts', `
+      ${importedMsg}
+
+      ${unmanagedFiles.length > 0 ? `
+      <div class="card" style="border:2px solid #f59e0b;margin-bottom:24px;">
+        <div class="card-header" style="background:#fffbeb;"><h3 style="color:#92400e;">Existing Blog Posts Need Importing</h3></div>
+        <div class="card-body">
+          <p style="color:#92400e;margin-bottom:16px;">${unmanagedFiles.length} blog post(s) exist as static files but aren't in the admin system yet. Import them to enable full editing (content, SEO, images, etc).</p>
+          <form method="POST" action="/admin/blog/import" style="margin-bottom:16px;">
+            <button type="submit" class="btn btn-primary">Import All ${unmanagedFiles.length} Posts</button>
+          </form>
+          <details>
+            <summary style="cursor:pointer;color:#6b7280;font-size:13px;">Or import individually...</summary>
+            <div style="margin-top:12px;">
+              ${unmanagedFiles.map(f => {
+                const slug = f.replace('.html', '');
+                return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e5e7eb;">
+                  <span style="font-size:13px;">${slug}</span>
+                  <form method="POST" action="/admin/blog/import/${slug}" style="display:inline;">
+                    <button type="submit" class="btn btn-outline btn-sm">Import</button>
+                  </form>
+                </div>`;
+              }).join('')}
+            </div>
+          </details>
+        </div>
+      </div>` : ''}
+
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
         <p style="color:#6b7280;">${posts.length} blog post${posts.length !== 1 ? 's' : ''}</p>
         <a href="/admin/blog/new" class="btn btn-primary">+ New Post</a>
@@ -754,6 +783,98 @@ module.exports = function createAdminRouter(db) {
 
   router.post('/blog/save', requireAuth, upload.single('featured_image'), blogSaveHandler);
   router.post('/blog/save/:id', requireAuth, upload.single('featured_image'), blogSaveHandler);
+
+  // ============================================
+  // BLOG POSTS - IMPORT STATIC FILES
+  // ============================================
+  function parseStaticBlogPost(filePath) {
+    const html = fs.readFileSync(filePath, 'utf-8');
+    const slug = path.basename(filePath, '.html');
+
+    // Extract title from <h1>
+    const titleMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
+    const title = titleMatch ? titleMatch[1].trim() : slug.replace(/-/g, ' ');
+
+    // Extract meta description
+    const descMatch = html.match(/<meta\s+name="description"\s+content="([\s\S]*?)"/);
+    const metaDescription = descMatch ? descMatch[1].trim() : '';
+
+    // Extract meta title from <title>
+    const metaTitleMatch = html.match(/<title>([\s\S]*?)<\/title>/);
+    const metaTitle = metaTitleMatch ? metaTitleMatch[1].trim() : '';
+
+    // Extract category
+    const catMatch = html.match(/class="post-category">([\s\S]*?)<\//);
+    const category = catMatch ? catMatch[1].trim() : 'General';
+
+    // Extract read time
+    const readMatch = html.match(/(\d+\s*min\s*read)/i);
+    const readTime = readMatch ? readMatch[1] : '5 min read';
+
+    // Extract post-content div body - find opening tag then match until </article>
+    const contentStartIdx = html.indexOf('<div class="post-content">');
+    let content = '';
+    if (contentStartIdx !== -1) {
+      const afterTag = html.substring(contentStartIdx + '<div class="post-content">'.length);
+      // Find the closing </div> that pairs with post-content (right before </div></article>)
+      const articleEnd = afterTag.indexOf('</article>');
+      if (articleEnd !== -1) {
+        // Content ends at the last </div> before </article>, minus the container </div>
+        let chunk = afterTag.substring(0, articleEnd).trim();
+        // Remove trailing </div></div> (post-content close + container close)
+        chunk = chunk.replace(/\s*<\/div>\s*<\/div>\s*$/, '');
+        content = chunk.trim();
+      }
+    }
+
+    // Remove post-cta div from content (the template adds its own CTA)
+    content = content.replace(/<div class="post-cta">[\s\S]*?<\/div>\s*$/, '').trim();
+
+    return { slug, title, content, category, readTime, metaTitle, metaDescription, excerpt: metaDescription };
+  }
+
+  function getUnmanagedBlogFiles() {
+    const blogDir = path.join(__dirname, 'public', 'blog');
+    if (!fs.existsSync(blogDir)) return [];
+    const staticFiles = fs.readdirSync(blogDir).filter(f => f.endsWith('.html'));
+    const dbSlugs = new Set(db.prepare('SELECT slug FROM blog_posts').all().map(p => p.slug));
+    return staticFiles.filter(f => !dbSlugs.has(f.replace('.html', '')));
+  }
+
+  router.post('/blog/import', requireAuth, (req, res) => {
+    const unmanagedFiles = getUnmanagedBlogFiles();
+    const blogDir = path.join(__dirname, 'public', 'blog');
+    let imported = 0;
+
+    for (const file of unmanagedFiles) {
+      try {
+        const parsed = parseStaticBlogPost(path.join(blogDir, file));
+        db.prepare(`INSERT INTO blog_posts (title, slug, excerpt, content, category, read_time, featured_image, meta_title, meta_description, published, featured) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+          .run(parsed.title, parsed.slug, parsed.excerpt, parsed.content, parsed.category, parsed.readTime, '', parsed.metaTitle, parsed.metaDescription, 1, 0);
+        imported++;
+      } catch (e) {
+        console.error('Failed to import blog post:', file, e.message);
+      }
+    }
+
+    res.redirect('/admin/blog?imported=' + imported);
+  });
+
+  router.post('/blog/import/:slug', requireAuth, (req, res) => {
+    const blogDir = path.join(__dirname, 'public', 'blog');
+    const filePath = path.join(blogDir, req.params.slug + '.html');
+    if (!fs.existsSync(filePath)) return res.redirect('/admin/blog');
+
+    try {
+      const parsed = parseStaticBlogPost(filePath);
+      db.prepare(`INSERT INTO blog_posts (title, slug, excerpt, content, category, read_time, featured_image, meta_title, meta_description, published, featured) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+        .run(parsed.title, parsed.slug, parsed.excerpt, parsed.content, parsed.category, parsed.readTime, '', parsed.metaTitle, parsed.metaDescription, 1, 0);
+    } catch (e) {
+      console.error('Failed to import blog post:', req.params.slug, e.message);
+    }
+
+    res.redirect('/admin/blog?imported=1');
+  });
 
   // ============================================
   // BLOG POSTS - DELETE
