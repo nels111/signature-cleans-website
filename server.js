@@ -465,6 +465,129 @@ Object.entries(oldUrlRedirects).forEach(([from, to]) => {
   app.get(from, (req, res) => res.redirect(301, to));
 });
 
+// ============================================
+// DYNAMIC SITEMAP — auto-generated from files + DB
+// ============================================
+const SITE_URL = 'https://signature-cleans.co.uk';
+
+// Page config: priority, changefreq by path pattern
+function getSitemapConfig(urlPath) {
+  if (urlPath === '/') return { priority: '1.0', changefreq: 'weekly' };
+  if (urlPath === '/quote.html' || urlPath === '/estimator.html') return { priority: '0.9', changefreq: 'monthly' };
+  if (urlPath === '/about.html' || urlPath === '/contact.html') return { priority: '0.8', changefreq: 'monthly' };
+  if (urlPath === '/services.html') return { priority: '0.8', changefreq: 'monthly' };
+  if (urlPath.startsWith('/services/')) return { priority: '0.8', changefreq: 'monthly' };
+  if (urlPath.startsWith('/areas/')) return { priority: '0.7', changefreq: 'monthly' };
+  if (urlPath === '/blog.html') return { priority: '0.7', changefreq: 'weekly' };
+  if (urlPath.startsWith('/blog/')) return { priority: '0.6', changefreq: 'monthly' };
+  if (['/privacy.html', '/terms.html', '/cookies.html'].includes(urlPath)) return { priority: '0.3', changefreq: 'yearly' };
+  return { priority: '0.5', changefreq: 'monthly' };
+}
+
+// Excluded from sitemap
+const SITEMAP_EXCLUDE = new Set(['/thank-you.html', '/sitemap.xml', '/robots.txt']);
+
+function scanHtmlFiles(dir, base) {
+  const results = [];
+  if (!fs.existsSync(dir)) return results;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const urlPath = base + '/' + entry.name;
+    if (entry.isDirectory()) {
+      // Skip non-content directories
+      if (['css', 'js', 'images', 'fonts'].includes(entry.name)) continue;
+      results.push(...scanHtmlFiles(fullPath, urlPath));
+    } else if (entry.name.endsWith('.html') && !SITEMAP_EXCLUDE.has(urlPath)) {
+      const stats = fs.statSync(fullPath);
+      results.push({
+        urlPath,
+        lastmod: stats.mtime.toISOString().split('T')[0]
+      });
+    }
+  }
+  return results;
+}
+
+app.get('/sitemap.xml', (req, res) => {
+  try {
+    const publicDir = path.join(__dirname, 'public');
+    const pages = scanHtmlFiles(publicDir, '');
+
+    // Add homepage
+    const indexFile = path.join(publicDir, 'index.html');
+    const indexMod = fs.existsSync(indexFile) ? fs.statSync(indexFile).mtime.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+    // Group pages by type for organized output
+    const core = [];
+    const services = [];
+    const areas = [];
+    const blog = [];
+    const legal = [];
+
+    for (const page of pages) {
+      if (page.urlPath === '/index.html') continue; // handled as homepage
+      if (page.urlPath.startsWith('/services/')) services.push(page);
+      else if (page.urlPath === '/services.html') services.unshift(page);
+      else if (page.urlPath.startsWith('/areas/')) areas.push(page);
+      else if (page.urlPath.startsWith('/blog/')) blog.push(page);
+      else if (page.urlPath === '/blog.html') blog.unshift(page);
+      else if (['/privacy.html', '/terms.html', '/cookies.html'].includes(page.urlPath)) legal.push(page);
+      else core.push(page);
+    }
+
+    function urlEntry(loc, lastmod, config) {
+      return `  <url>\n    <loc>${SITE_URL}${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${config.changefreq}</changefreq>\n    <priority>${config.priority}</priority>\n  </url>`;
+    }
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+    // Homepage
+    xml += '\n  <!-- Homepage -->\n';
+    xml += urlEntry('/', indexMod, getSitemapConfig('/')) + '\n';
+
+    // Core pages
+    if (core.length) {
+      xml += '\n  <!-- Core Pages -->\n';
+      for (const p of core) xml += urlEntry(p.urlPath, p.lastmod, getSitemapConfig(p.urlPath)) + '\n';
+    }
+
+    // Services
+    if (services.length) {
+      xml += '\n  <!-- Services -->\n';
+      for (const p of services) xml += urlEntry(p.urlPath, p.lastmod, getSitemapConfig(p.urlPath)) + '\n';
+    }
+
+    // Areas
+    if (areas.length) {
+      xml += '\n  <!-- Service Areas -->\n';
+      for (const p of areas) xml += urlEntry(p.urlPath, p.lastmod, getSitemapConfig(p.urlPath)) + '\n';
+    }
+
+    // Blog
+    if (blog.length) {
+      xml += '\n  <!-- Blog -->\n';
+      for (const p of blog) xml += urlEntry(p.urlPath, p.lastmod, getSitemapConfig(p.urlPath)) + '\n';
+    }
+
+    // Legal
+    if (legal.length) {
+      xml += '\n  <!-- Legal -->\n';
+      for (const p of legal) xml += urlEntry(p.urlPath, p.lastmod, getSitemapConfig(p.urlPath)) + '\n';
+    }
+
+    xml += '</urlset>';
+
+    res.set('Content-Type', 'application/xml');
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.send(xml);
+  } catch (error) {
+    console.error('Sitemap generation error:', error);
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
 // Static files — cache CSS/JS/images for 7 days, HTML for 1 hour
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
