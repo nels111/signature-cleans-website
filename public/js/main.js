@@ -15,6 +15,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Mobile Services Dropdown Toggle
+    const dropdownWrapper = document.querySelector('.nav-dropdown-wrapper');
+    const dropdownTrigger = document.querySelector('.nav-dropdown-trigger');
+    if (dropdownWrapper && dropdownTrigger) {
+        dropdownTrigger.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                dropdownWrapper.classList.toggle('open');
+            }
+        });
+    }
+
     // Navbar Background on Scroll
     const nav = document.getElementById('nav');
     
