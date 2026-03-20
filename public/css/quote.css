@@ -242,44 +242,71 @@
     color: var(--color-primary);
 }
 
-.size-options {
+/* Hours selector */
+.hours-options {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
 }
 
-.size-option {
+.hours-option {
     background: var(--color-background);
     border: 2px solid var(--color-border);
     border-radius: 12px;
-    padding: 16px;
-    text-align: left;
+    padding: 14px 12px;
+    text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
     font-family: inherit;
-    color: inherit;
-}
-
-.size-option:hover {
-    border-color: var(--color-accent);
-}
-
-.size-option.selected {
-    border-color: var(--color-accent);
-    background: rgba(37, 99, 235, 0.04);
-}
-
-.size-label {
-    font-weight: 600;
     font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-primary);
 }
 
-.size-detail {
+.hours-option:hover {
+    border-color: var(--color-accent);
+}
+
+.hours-option.selected {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.requirement-hint {
     font-size: 0.8125rem;
     color: var(--color-secondary);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+/* Gate form */
+.gate-form {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Estimate CTA section */
+.estimate-cta-section {
+    text-align: center;
+    padding: var(--space-md) 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-md);
+}
+
+.estimate-cta-section h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-xs);
+}
+
+.estimate-cta-section > p {
+    color: var(--color-secondary);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-md);
 }
 
 .frequency-options {
@@ -791,8 +818,8 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .size-options {
-        grid-template-columns: 1fr;
+    .hours-options {
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .frequency-options {

@@ -390,17 +390,19 @@ a {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 80%;
-    max-width: 900px;
-    opacity: 0.15;
+    width: 100%;
+    max-width: none;
+    max-height: 45vh;
+    opacity: 0.18;
     z-index: 1;
     animation: fadeIn 1.5s ease-out;
+    overflow: hidden;
 }
 
 .hero-image img {
     width: 100%;
     object-fit: cover;
-    border-radius: 20px 20px 0 0;
+    border-radius: 0;
 }
 
 .hero-scroll {
@@ -764,7 +766,7 @@ a {
 
 .footer-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     gap: var(--space-lg);
     margin-bottom: var(--space-lg);
 }
