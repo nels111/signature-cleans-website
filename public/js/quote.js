@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (resultMonthly) resultMonthly.textContent = '\u00A3' + estimate.monthlyPrice.toLocaleString('en-GB');
 
         // Hours summary
-        if (resultHoursSummary) resultHoursSummary.textContent = estimate.weeklyHours + ' hours per week at \u00A327/hr';
+        if (resultHoursSummary) resultHoursSummary.textContent = estimate.weeklyHours + ' hours per week';
 
         // Detail breakdown
         if (resultHours) resultHours.textContent = selectedHours + (selectedHours === 1 ? ' hour' : ' hours');
