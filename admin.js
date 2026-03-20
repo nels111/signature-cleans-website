@@ -1148,6 +1148,15 @@ module.exports = function createAdminRouter(db) {
                     <a href="../services/specialist-services.html">Specialist Services</a>
                 </div>
                 <div class="footer-links">
+                    <h4>Sectors</h4>
+                    <a href="../services/office-cleaning.html">Offices</a>
+                    <a href="../services/medical-dental-cleaning.html">Medical & Dental</a>
+                    <a href="../services/school-cleaning.html">Schools</a>
+                    <a href="../services/hospitality-cleaning.html">Hospitality</a>
+                    <a href="../services/construction-welfare-cleaning.html">Construction</a>
+                    <a href="../services/warehouse-industrial-cleaning.html">Warehouses</a>
+                </div>
+                <div class="footer-links">
                     <h4>Company</h4>
                     <a href="../about.html">About Us</a>
                     <a href="../blog.html">Blog</a>
@@ -1334,6 +1343,15 @@ ${postCards}
                     <a href="services/contract-cleaning.html">Contract Cleaning</a>
                     <a href="services/deep-cleaning.html">Deep Cleaning</a>
                     <a href="services/specialist-services.html">Specialist Services</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Sectors</h4>
+                    <a href="services/office-cleaning.html">Offices</a>
+                    <a href="services/medical-dental-cleaning.html">Medical & Dental</a>
+                    <a href="services/school-cleaning.html">Schools</a>
+                    <a href="services/hospitality-cleaning.html">Hospitality</a>
+                    <a href="services/construction-welfare-cleaning.html">Construction</a>
+                    <a href="services/warehouse-industrial-cleaning.html">Warehouses</a>
                 </div>
                 <div class="footer-links">
                     <h4>Company</h4>
@@ -1625,6 +1643,12 @@ ${postCards}
       'services/contract-cleaning.html': 'Contract Cleaning',
       'services/deep-cleaning.html': 'Deep Cleaning',
       'services/specialist-services.html': 'Specialist Services',
+      'services/office-cleaning.html': 'Office Cleaning',
+      'services/medical-dental-cleaning.html': 'Medical & Dental Cleaning',
+      'services/school-cleaning.html': 'School Cleaning',
+      'services/hospitality-cleaning.html': 'Hospitality Cleaning',
+      'services/construction-welfare-cleaning.html': 'Construction Welfare Cleaning',
+      'services/warehouse-industrial-cleaning.html': 'Warehouse & Industrial Cleaning',
       'areas/devon.html': 'Devon Area',
       'areas/cornwall.html': 'Cornwall Area',
       'areas/somerset.html': 'Somerset Area',
