@@ -978,8 +978,8 @@ module.exports = function createAdminRouter(db) {
       if (articleEnd !== -1) {
         // Content ends at the last </div> before </article>, minus the container </div>
         let chunk = afterTag.substring(0, articleEnd).trim();
-        // Remove trailing </div></div> (post-content close + container close)
-        chunk = chunk.replace(/\s*<\/div>\s*<\/div>\s*$/, '');
+        // Remove trailing </div> (post-content close)
+        chunk = chunk.replace(/\s*<\/div>\s*$/, '');
         content = chunk.trim();
       }
     }
@@ -1121,26 +1121,24 @@ module.exports = function createAdminRouter(db) {
 
     <!-- Blog Post -->
     <article class="blog-post">
-        <div class="container">
-            <header class="post-header">
-                <a href="../blog.html" class="post-back">&larr; Back to Blog</a>
-                <span class="post-category">${escHTML(post.category)}</span>
-                <h1>${escHTML(post.title)}</h1>
-                <div class="post-meta">
-                    <span>${escHTML(post.read_time)}</span>
-                    <span>&bull;</span>
-                    <span>${dateStr}</span>
-                </div>
-            </header>
-            ${post.featured_image ? '<img src="' + post.featured_image + '" alt="' + escHTML(post.title) + '" style="width:100%;border-radius:12px;margin:20px 0;">' : ''}
-            <div class="post-content">
-                ${post.content}
+        <header class="post-header">
+            <a href="../blog.html" class="post-back">&larr; Back to Blog</a>
+            <span class="post-category">${escHTML(post.category)}</span>
+            <h1>${escHTML(post.title)}</h1>
+            <div class="post-meta">
+                <span>${escHTML(post.read_time)}</span>
+                <span>&bull;</span>
+                <span>${dateStr}</span>
+            </div>
+        </header>
+        ${post.featured_image ? '<img src="' + post.featured_image + '" alt="' + escHTML(post.title) + '" style="max-width:720px;width:100%;margin:0 auto var(--space-md);display:block;border-radius:12px;">' : ''}
+        <div class="post-content">
+            ${post.content}
 
-                <div class="post-cta">
-                    <h3>Ready for better cleaning?</h3>
-                    <p>Signature Cleans provides tailored commercial cleaning across Exeter and Devon. Get in touch for a free, no-obligation quote.</p>
-                    <a href="../quote.html" class="cta-button">Get a Quote</a>
-                </div>
+            <div class="post-cta">
+                <h3>Ready for better cleaning?</h3>
+                <p>Signature Cleans provides tailored commercial cleaning across Exeter and Devon. Get in touch for a free, no-obligation quote.</p>
+                <a href="../quote.html" class="cta-button">Get a Quote</a>
             </div>
         </div>
     </article>
