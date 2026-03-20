@@ -626,101 +626,95 @@ function validateContact(data) {
 }
 
 // ============================================
-// QUOTE ESTIMATOR CONFIG — Price Bands Framework
-// Uses broad hours RANGES per site size to produce wide price bands.
-// No hourly rate or hours exposed to visitor.
+// QUOTE ESTIMATOR CONFIG — Hours-Based Pricing
+// Flat £27/hr rate. Visitor selects estimated hours per visit.
+// Contact details required BEFORE estimator is accessible.
 // ============================================
 const ESTIMATOR_CONFIG = {
-  // Client-facing billing rates (£/hr) — used server-side only
-  billingRateLow:  25,    // Floor rate — never quote below this
-  billingRateHigh: 27,    // Target rate
-
-  weeksPerMonth: 4.33,
-
-  // Hours per VISIT range [low, high] by site size
-  // Wide ranges account for varied scope within each size band
-  sizeToHoursRange: {
-    'small':      [1, 3],     // Under 200 m²
-    'medium':     [2, 6],     // 200 – 1,000 m²
-    'large':      [3, 10],    // 1,000 – 5,000 m²
-    'very-large': [6, 20]     // 5,000+ m²
-  },
-
-  // Scope-tier multiplier by site type
-  // Standard = 1.0, Enhanced (+10-15%), Heavy (+20-30%)
-  scopeMultiplier: {
-    'Office/Commercial':      1.0,    // Standard scope
-    'Education/Institutional': 1.0,   // Standard scope
-    'Dental/Medical':          1.12,  // Enhanced — clinical areas
-    'Hospitality/Venue':       1.12,  // Enhanced — front-of-house standards
-    'Welfare/Construction':    1.15,  // Enhanced — welfare regs
-    'Specialist/Industrial':   1.25   // Heavy — industrial / specialist
-  }
+  billingRate: 27,          // £27/hr flat rate
+  weeksPerMonth: 4.33
 };
 
 // ============================================
 // API ROUTES
 // ============================================
 
-// Estimate endpoint — Broad Price Bands calculation
-app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
+// Estimate endpoint — Hours-based, contact-gated
+app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
   try {
-    const { siteType, size, frequency } = req.body;
-    const freq = parseInt(frequency);
+    const { siteType, hours, frequency, name, email, phone, company, postcode, website } = req.body;
 
-    if (!size || !freq || freq < 1 || freq > 7) {
+    // Honeypot check
+    if (website && website.trim() !== '') return res.json({ success: true, estimate: { weeklyPrice: 0, monthlyPrice: 0, weeklyHours: 0, cellType: 'A', cellLabel: 'Small Site' } });
+
+    // Validate contact details (required — this gates the estimator)
+    const errors = [];
+    if (!name || name.trim().length < 2) errors.push('Name is required');
+    if (!email || !validator.isEmail(email)) errors.push('Valid email is required');
+    if (!phone || phone.replace(/\D/g, '').length < 10) errors.push('Valid phone number is required');
+    if (errors.length > 0) return res.status(400).json({ success: false, errors });
+
+    const freq = parseInt(frequency);
+    const hrs = parseFloat(hours);
+
+    if (!hrs || hrs < 1 || hrs > 40 || !freq || freq < 1 || freq > 7) {
       return res.status(400).json({ success: false, error: 'Invalid input' });
     }
 
-    const hoursRange = ESTIMATOR_CONFIG.sizeToHoursRange[size];
-    if (!hoursRange) {
-      return res.status(400).json({ success: false, error: 'Invalid size' });
-    }
+    // Calculate estimate at £27/hr
+    const weeklyHours = hrs * freq;
+    const weeklyPrice = Math.round(weeklyHours * ESTIMATOR_CONFIG.billingRate / 5) * 5;
+    const monthlyPrice = Math.round(weeklyPrice * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
 
-    // Apply scope multiplier (Enhanced / Heavy sites need more hours)
-    const scopeMult = ESTIMATOR_CONFIG.scopeMultiplier[siteType] || 1.0;
-    const hoursLowPerVisit  = hoursRange[0] * scopeMult;
-    const hoursHighPerVisit = hoursRange[1] * scopeMult;
-
-    // Weekly hours range
-    const weeklyHoursLow  = hoursLowPerVisit * freq;
-    const weeklyHoursHigh = hoursHighPerVisit * freq;
-
-    // Weekly charge: low hours × low rate, high hours × high rate
-    const weeklyLow  = weeklyHoursLow  * ESTIMATOR_CONFIG.billingRateLow;
-    const weeklyHigh = weeklyHoursHigh * ESTIMATOR_CONFIG.billingRateHigh;
-
-    // Round weekly to nearest £5
-    const weeklyLowRounded  = Math.round(weeklyLow  / 5) * 5;
-    const weeklyHighRounded = Math.round(weeklyHigh / 5) * 5;
-
-    // Monthly charge: weekly × 4.33, rounded to nearest £10
-    const monthlyLow  = Math.round(weeklyLowRounded  * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
-    const monthlyHigh = Math.round(weeklyHighRounded * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
-
-    // Classify into Cell Type based on midpoint of weekly hours range
-    const weeklyHoursMid = (weeklyHoursLow + weeklyHoursHigh) / 2;
+    // Cell type classification
     let cellType, cellLabel;
-    if (weeklyHoursMid <= 15) {
-      cellType = 'A';
-      cellLabel = 'Small Site';
-    } else if (weeklyHoursMid <= 30) {
-      cellType = 'B';
-      cellLabel = 'Medium Site';
+    if (weeklyHours <= 15) {
+      cellType = 'A'; cellLabel = 'Small Site';
+    } else if (weeklyHours <= 30) {
+      cellType = 'B'; cellLabel = 'Medium Site';
     } else {
-      cellType = 'C';
-      cellLabel = 'Large Site';
+      cellType = 'C'; cellLabel = 'Large Site';
     }
+
+    // Save lead to database
+    const submission = {
+      type: 'quote',
+      name: sanitize(name),
+      email: validator.normalizeEmail(email) || '',
+      phone: sanitize(phone),
+      company: sanitize(company || ''),
+      postcode: sanitize(postcode || ''),
+      message: '',
+      serviceType: 'contract',
+      frequency: String(freq),
+      size: '',
+      sector: sanitize(siteType || ''),
+      leadSource: 'website-estimator',
+      estimate: weeklyPrice + '/wk',
+      estimatedHours: String(hrs),
+      ip: req.ip || req.headers['x-forwarded-for'] || 'unknown'
+    };
+
+    const stmt = db.prepare(`
+      INSERT INTO submissions (type, name, email, phone, company, postcode, message, serviceType, frequency, size, sector, leadSource, estimate, estimatedHours, ip)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(submission.type, submission.name, submission.email, submission.phone, submission.company,
+             submission.postcode, submission.message, submission.serviceType, submission.frequency,
+             submission.size, submission.sector, submission.leadSource, submission.estimate,
+             submission.estimatedHours, submission.ip);
+
+    // Send notification + auto-reply (non-blocking)
+    sendNotificationEmail(submission).catch(() => {});
+    sendAutoReplyEmail(submission).catch(() => {});
+    zoho.pushLead(submission).catch(() => {});
 
     res.json({
       success: true,
       estimate: {
-        cellType: cellType,
-        cellLabel: cellLabel,
-        weeklyLow:  weeklyLowRounded,
-        weeklyHigh: weeklyHighRounded,
-        monthlyLow:  monthlyLow,
-        monthlyHigh: monthlyHigh
+        cellType, cellLabel,
+        weeklyPrice, monthlyPrice,
+        weeklyHours
       }
     });
   } catch (error) {
