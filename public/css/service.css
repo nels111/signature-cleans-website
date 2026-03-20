@@ -46,8 +46,8 @@
     border-radius: 20px;
 }
 
-/* Service Content */
-.service-content {
+/* Service Content (section-level, not cards) */
+section.service-content {
     padding: var(--space-lg) 0 var(--space-xl);
     background: var(--color-background);
 }

@@ -615,6 +615,19 @@ a {
     overflow: hidden;
     transition: all var(--transition-medium);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card .service-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card .service-link {
+    margin-top: auto;
 }
 
 .service-card:hover {
