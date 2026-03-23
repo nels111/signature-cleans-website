@@ -3,3 +3,5 @@
 {"t":0,"agent":"aa0bcbd","agent_type":"unknown","event":"agent_stop","success":true}
 {"t":0,"agent":"system","event":"skill_invoked","skill_name":"oh-my-claudecode:cancel"}
 {"t":0,"agent":"af2a5c5","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"ab15b48","agent_type":"general-purpose","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"ab15b48","agent_type":"general-purpose","event":"agent_stop","success":true,"duration_ms":13334}

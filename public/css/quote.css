@@ -1296,3 +1296,30 @@
 .quote-form {
     position: relative;
 }
+
+/* ============================================
+   RESPONSIVE — Quote Page Overrides
+   (must come AFTER quote page styles above)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .quote-options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quote-option-card {
+        padding: 30px 24px;
+    }
+
+    .quote-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quote-sidebar {
+        order: -1;
+    }
+
+    .sidebar-card:not(.highlight) {
+        display: none;
+    }
+}
