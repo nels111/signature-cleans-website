@@ -1,0 +1,372 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1774246132595,
+  "projectRoot": "/Users/nelsoniseguan/signature-cleans-website-4",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=18.0.0",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "express",
+        "version": "4.18.2",
+        "category": "backend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": "Node.js 18.0.0"
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "start": "node server.js",
+      "dev": "nodemon server.js"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 16,
+      "lastAccessed": 1774246132553,
+      "keyFiles": [
+        "about.html",
+        "apple-touch-icon.png",
+        "blog.html",
+        "contact.html",
+        "cookies.html"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "admin.js",
+      "accessCount": 101,
+      "lastAccessed": 1774258878615,
+      "type": "file"
+    },
+    {
+      "path": "public",
+      "accessCount": 56,
+      "lastAccessed": 1774258481363,
+      "type": "directory"
+    },
+    {
+      "path": "server.js",
+      "accessCount": 49,
+      "lastAccessed": 1774258320590,
+      "type": "file"
+    },
+    {
+      "path": "public/estimator.html",
+      "accessCount": 26,
+      "lastAccessed": 1774258084886,
+      "type": "file"
+    },
+    {
+      "path": "public/css/styles.css",
+      "accessCount": 24,
+      "lastAccessed": 1774257859946,
+      "type": "file"
+    },
+    {
+      "path": "public/css/quote.css",
+      "accessCount": 24,
+      "lastAccessed": 1774257872414,
+      "type": "file"
+    },
+    {
+      "path": "public/services/office-cleaning.html",
+      "accessCount": 16,
+      "lastAccessed": 1774252673168,
+      "type": "file"
+    },
+    {
+      "path": "public/privacy.html",
+      "accessCount": 14,
+      "lastAccessed": 1774251425765,
+      "type": "file"
+    },
+    {
+      "path": "public/about.html",
+      "accessCount": 14,
+      "lastAccessed": 1774253205030,
+      "type": "file"
+    },
+    {
+      "path": "public/services/medical-dental-cleaning.html",
+      "accessCount": 13,
+      "lastAccessed": 1774252674135,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 13,
+      "lastAccessed": 1774255564266,
+      "type": "directory"
+    },
+    {
+      "path": "public/services/school-cleaning.html",
+      "accessCount": 12,
+      "lastAccessed": 1774252674868,
+      "type": "file"
+    },
+    {
+      "path": "public/services/hospitality-cleaning.html",
+      "accessCount": 12,
+      "lastAccessed": 1774252675616,
+      "type": "file"
+    },
+    {
+      "path": "public/services/construction-welfare-cleaning.html",
+      "accessCount": 12,
+      "lastAccessed": 1774252676541,
+      "type": "file"
+    },
+    {
+      "path": "public/services/warehouse-industrial-cleaning.html",
+      "accessCount": 12,
+      "lastAccessed": 1774252677213,
+      "type": "file"
+    },
+    {
+      "path": "public/js/main.js",
+      "accessCount": 12,
+      "lastAccessed": 1774253736827,
+      "type": "file"
+    },
+    {
+      "path": "public/js/quote.js",
+      "accessCount": 12,
+      "lastAccessed": 1774256916971,
+      "type": "file"
+    },
+    {
+      "path": "public/contact.html",
+      "accessCount": 11,
+      "lastAccessed": 1774253288834,
+      "type": "file"
+    },
+    {
+      "path": "public/quote.html",
+      "accessCount": 11,
+      "lastAccessed": 1774255433532,
+      "type": "file"
+    },
+    {
+      "path": "public/terms.html",
+      "accessCount": 10,
+      "lastAccessed": 1774251487997,
+      "type": "file"
+    },
+    {
+      "path": "public/index.html",
+      "accessCount": 10,
+      "lastAccessed": 1774253993884,
+      "type": "file"
+    },
+    {
+      "path": "public/cookies.html",
+      "accessCount": 9,
+      "lastAccessed": 1774250848444,
+      "type": "file"
+    },
+    {
+      "path": "public/services.html",
+      "accessCount": 9,
+      "lastAccessed": 1774252250547,
+      "type": "file"
+    },
+    {
+      "path": "public/services/contract-cleaning.html",
+      "accessCount": 9,
+      "lastAccessed": 1774252666657,
+      "type": "file"
+    },
+    {
+      "path": "public/thank-you.html",
+      "accessCount": 7,
+      "lastAccessed": 1774250851445,
+      "type": "file"
+    },
+    {
+      "path": "public/areas/devon.html",
+      "accessCount": 7,
+      "lastAccessed": 1774250984128,
+      "type": "file"
+    },
+    {
+      "path": "public/services/deep-cleaning.html",
+      "accessCount": 7,
+      "lastAccessed": 1774252668676,
+      "type": "file"
+    },
+    {
+      "path": "public/services/specialist-services.html",
+      "accessCount": 7,
+      "lastAccessed": 1774252670170,
+      "type": "file"
+    },
+    {
+      "path": "public/areas/cornwall.html",
+      "accessCount": 6,
+      "lastAccessed": 1774250990503,
+      "type": "file"
+    },
+    {
+      "path": "public/areas/somerset.html",
+      "accessCount": 6,
+      "lastAccessed": 1774250996452,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/clean-workspaces-boost-productivity.html",
+      "accessCount": 6,
+      "lastAccessed": 1774252364622,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/eco-friendly-commercial-cleaning.html",
+      "accessCount": 6,
+      "lastAccessed": 1774252366082,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/infection-control-dental-medical-cleaning.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252316186,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/signs-your-cleaning-contractor-isnt-performing.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252368684,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/true-cost-of-cheap-cleaning.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252370118,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/managing-multi-site-cleaning-contracts.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252371467,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/construction-welfare-cleaning-guide.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252372514,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/what-to-expect-during-a-site-visit.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252466964,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/cleaning-schedules-by-sector.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252468836,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/ssip-cqms-accreditations-explained.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252487298,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/contract-cleaning-vs-deep-cleaning.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252488763,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/choosing-the-right-commercial-cleaning-company.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252489866,
+      "type": "file"
+    },
+    {
+      "path": "public/blog/cleaning-audits-prevent-service-drift.html",
+      "accessCount": 5,
+      "lastAccessed": 1774252490958,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 4,
+      "lastAccessed": 1774250025779,
+      "type": "file"
+    },
+    {
+      "path": "public/blog.html",
+      "accessCount": 3,
+      "lastAccessed": 1774246545024,
+      "type": "file"
+    },
+    {
+      "path": "public/css/service.css",
+      "accessCount": 3,
+      "lastAccessed": 1774255537027,
+      "type": "file"
+    },
+    {
+      "path": "public/js",
+      "accessCount": 2,
+      "lastAccessed": 1774246547524,
+      "type": "directory"
+    },
+    {
+      "path": "public/css/about.css",
+      "accessCount": 2,
+      "lastAccessed": 1774248402348,
+      "type": "file"
+    },
+    {
+      "path": "public/js/config.js",
+      "accessCount": 2,
+      "lastAccessed": 1774251266030,
+      "type": "file"
+    },
+    {
+      "path": "public/css/blog.css",
+      "accessCount": 2,
+      "lastAccessed": 1774252506447,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

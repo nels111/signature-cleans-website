@@ -1078,8 +1078,8 @@ module.exports = function createAdminRouter(db) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/blog.css">
+    <link rel="stylesheet" href="../css/styles.css?v=3">
+    <link rel="stylesheet" href="../css/blog.css?v=3">
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"Article","headline":"${escJSON(post.title)}","description":"${escJSON(metaDesc)}","author":{"@type":"Organization","name":"Signature Cleans"},"publisher":{"@type":"Organization","name":"Signature Cleans","logo":{"@type":"ImageObject","url":"https://signature-cleans.co.uk/images/logo.jpeg"}},"datePublished":"${dateISO}","url":"${canonical}","mainEntityOfPage":"${canonical}"${post.featured_image ? ',"image":"https://signature-cleans.co.uk' + post.featured_image + '"' : ''}}
     </script>
@@ -1215,7 +1215,7 @@ module.exports = function createAdminRouter(db) {
         </div>
     </footer>
 
-    <script src="../js/main.js"></script>
+    <script src="../js/main.js?v=3"></script>
 </body>
 </html>`;
 
@@ -1321,8 +1321,8 @@ module.exports = function createAdminRouter(db) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/blog.css">
+    <link rel="stylesheet" href="css/styles.css?v=3">
+    <link rel="stylesheet" href="css/blog.css?v=3">
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
@@ -1457,7 +1457,7 @@ ${postCards}
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=3"></script>
 </body>
 </html>`;
 
