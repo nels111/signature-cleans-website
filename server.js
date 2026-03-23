@@ -417,8 +417,8 @@ if (zoho.enabled) {
 // ============================================
 // MIDDLEWARE
 // ============================================
-// Trust proxy for accurate IP addresses (important when behind reverse proxy/load balancer)
-app.set('trust proxy', true);
+// Trust proxy for accurate IP addresses (1 = trust single Nginx reverse proxy)
+app.set('trust proxy', 1);
 
 // Gzip compression — reduces response sizes by ~70%
 app.use(compression());
