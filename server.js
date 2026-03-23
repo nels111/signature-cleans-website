@@ -77,6 +77,11 @@ if (process.env.SMTP_HOST) {
   console.log('⚠ Email not configured - submissions will be logged only');
 }
 
+function escHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function sendNotificationEmail(submission) {
   if (!transporter) {
     console.log('Email notification skipped (not configured)');
@@ -117,23 +122,23 @@ async function sendNotificationEmail(submission) {
     <div class="content">
       <div class="field">
         <div class="label">Name</div>
-        <div class="value">${submission.name}</div>
+        <div class="value">${escHTML(submission.name)}</div>
       </div>
       <div class="field">
         <div class="label">Email</div>
-        <div class="value"><a href="mailto:${submission.email}">${submission.email}</a></div>
+        <div class="value"><a href="mailto:${escHTML(submission.email)}">${escHTML(submission.email)}</a></div>
       </div>
-      ${submission.phone ? `<div class="field"><div class="label">Phone</div><div class="value"><a href="tel:${submission.phone}">${submission.phone}</a></div></div>` : ''}
-      ${submission.company ? `<div class="field"><div class="label">Company</div><div class="value">${submission.company}</div></div>` : ''}
-      ${submission.postcode ? `<div class="field"><div class="label">Postcode</div><div class="value">${submission.postcode}</div></div>` : ''}
-      ${submission.serviceType ? `<div class="field"><div class="label">Service Type</div><div class="value">${submission.serviceType}</div></div>` : ''}
-      ${submission.sector ? `<div class="field"><div class="label">Sector</div><div class="value">${submission.sector}</div></div>` : ''}
-      ${submission.size ? `<div class="field"><div class="label">Size</div><div class="value">${submission.size}</div></div>` : ''}
-      ${submission.frequency ? `<div class="field"><div class="label">Frequency</div><div class="value">${submission.frequency}</div></div>` : ''}
-      ${submission.estimate ? `<div class="field"><div class="label">Website Estimate</div><div class="value" style="font-size:18px;font-weight:bold;color:#2563eb;">&pound;${submission.estimate}</div></div>` : ''}
-      ${submission.estimatedHours ? `<div class="field"><div class="label">Estimated Hours/Day</div><div class="value">${submission.estimatedHours}</div></div>` : ''}
-      ${submission.leadSource ? `<div class="field"><div class="label">Lead Source</div><div class="value">${submission.leadSource}</div></div>` : ''}
-      ${submission.message ? `<div class="message-box"><div class="label">Message</div><div class="value">${submission.message.replace(/\n/g, '<br>')}</div></div>` : ''}
+      ${submission.phone ? `<div class="field"><div class="label">Phone</div><div class="value"><a href="tel:${escHTML(submission.phone)}">${escHTML(submission.phone)}</a></div></div>` : ''}
+      ${submission.company ? `<div class="field"><div class="label">Company</div><div class="value">${escHTML(submission.company)}</div></div>` : ''}
+      ${submission.postcode ? `<div class="field"><div class="label">Postcode</div><div class="value">${escHTML(submission.postcode)}</div></div>` : ''}
+      ${submission.serviceType ? `<div class="field"><div class="label">Service Type</div><div class="value">${escHTML(submission.serviceType)}</div></div>` : ''}
+      ${submission.sector ? `<div class="field"><div class="label">Sector</div><div class="value">${escHTML(submission.sector)}</div></div>` : ''}
+      ${submission.size ? `<div class="field"><div class="label">Size</div><div class="value">${escHTML(submission.size)}</div></div>` : ''}
+      ${submission.frequency ? `<div class="field"><div class="label">Frequency</div><div class="value">${escHTML(submission.frequency)}</div></div>` : ''}
+      ${submission.estimate ? `<div class="field"><div class="label">Website Estimate</div><div class="value" style="font-size:18px;font-weight:bold;color:#2563eb;">&pound;${escHTML(submission.estimate)}</div></div>` : ''}
+      ${submission.estimatedHours ? `<div class="field"><div class="label">Estimated Hours/Day</div><div class="value">${escHTML(submission.estimatedHours)}</div></div>` : ''}
+      ${submission.leadSource ? `<div class="field"><div class="label">Lead Source</div><div class="value">${escHTML(submission.leadSource)}</div></div>` : ''}
+      ${submission.message ? `<div class="message-box"><div class="label">Message</div><div class="value">${escHTML(submission.message).replace(/\n/g, '<br>')}</div></div>` : ''}
       <div class="footer">
         Submitted: ${new Date().toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}<br>
         IP: ${submission.ip || 'Unknown'}
@@ -206,15 +211,15 @@ async function sendAutoReplyEmail(submission) {
         <h1>Signature Cleans</h1>
       </div>
       <div class="body">
-        <p class="greeting">Hi ${submission.name},</p>
+        <p class="greeting">Hi ${escHTML(submission.name)},</p>
         <p>${bodyText}</p>
         ${isQuote && (submission.serviceType || submission.estimate) ? `
         <div class="summary">
-          ${submission.serviceType ? `<div class="summary-row"><span class="summary-label">Service</span><span class="summary-value">${submission.serviceType}</span></div>` : ''}
-          ${submission.sector ? `<div class="summary-row"><span class="summary-label">Sector</span><span class="summary-value">${submission.sector}</span></div>` : ''}
-          ${submission.size ? `<div class="summary-row"><span class="summary-label">Size</span><span class="summary-value">${submission.size}</span></div>` : ''}
-          ${submission.frequency ? `<div class="summary-row"><span class="summary-label">Frequency</span><span class="summary-value">${submission.frequency}</span></div>` : ''}
-          ${submission.estimate ? `<div class="summary-row"><span class="summary-label">Indicative Estimate</span><span class="summary-value">&pound;${submission.estimate.replace('/wk', '')} per week</span></div>` : ''}
+          ${submission.serviceType ? `<div class="summary-row"><span class="summary-label">Service</span><span class="summary-value">${escHTML(submission.serviceType)}</span></div>` : ''}
+          ${submission.sector ? `<div class="summary-row"><span class="summary-label">Sector</span><span class="summary-value">${escHTML(submission.sector)}</span></div>` : ''}
+          ${submission.size ? `<div class="summary-row"><span class="summary-label">Size</span><span class="summary-value">${escHTML(submission.size)}</span></div>` : ''}
+          ${submission.frequency ? `<div class="summary-row"><span class="summary-label">Frequency</span><span class="summary-value">${escHTML(submission.frequency)}</span></div>` : ''}
+          ${submission.estimate ? `<div class="summary-row"><span class="summary-label">Indicative Estimate</span><span class="summary-value">&pound;${escHTML(submission.estimate).replace('/wk', '')} per week</span></div>` : ''}
         </div>` : ''}
         <div class="divider"></div>
         <div class="contact-info">
@@ -657,7 +662,7 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
     const freq = parseInt(frequency);
     const hrs = parseFloat(hours);
 
-    if (!hrs || hrs < 1 || hrs > 40 || !freq || freq < 1 || freq > 7) {
+    if (!hrs || hrs < 2 || hrs > 40 || !freq || freq < 1 || freq > 7) {
       return res.status(400).json({ success: false, error: 'Invalid input' });
     }
 
@@ -665,6 +670,7 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
     const weeklyHours = hrs * freq;
     const weeklyPrice = Math.round(weeklyHours * ESTIMATOR_CONFIG.billingRate / 5) * 5;
     const monthlyPrice = Math.round(weeklyPrice * ESTIMATOR_CONFIG.weeksPerMonth / 10) * 10;
+    const siteVisitRecommended = weeklyHours >= 30;
 
     // Cell type classification
     let cellType, cellLabel;
@@ -677,6 +683,7 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
     }
 
     // Save lead to database
+    const estimateStr = weeklyPrice + '/wk' + (siteVisitRecommended ? ' (site visit recommended)' : '');
     const submission = {
       type: 'quote',
       name: sanitize(name),
@@ -690,7 +697,7 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
       size: '',
       sector: sanitize(siteType || ''),
       leadSource: 'website-estimator',
-      estimate: weeklyPrice + '/wk',
+      estimate: estimateStr,
       estimatedHours: String(hrs),
       ip: req.ip || req.headers['x-forwarded-for'] || 'unknown'
     };
@@ -714,7 +721,8 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
       estimate: {
         cellType, cellLabel,
         weeklyPrice, monthlyPrice,
-        weeklyHours
+        weeklyHours,
+        siteVisitRecommended
       }
     });
   } catch (error) {
@@ -822,7 +830,9 @@ app.use('/admin', createAdminRouter(db));
 // FALLBACK ROUTES
 // ============================================
 app.get('*', (req, res) => {
-  const filePath = path.join(__dirname, 'public', req.path);
+  const publicDir = path.join(__dirname, 'public');
+  const filePath = path.resolve(publicDir, req.path.replace(/^\//, ''));
+  if (!filePath.startsWith(publicDir)) return res.status(403).send('Forbidden');
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     res.sendFile(filePath);
   } else if (req.path.endsWith('.html') || !req.path.includes('.')) {

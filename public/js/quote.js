@@ -1,8 +1,8 @@
 /**
  * Signature Cleans - Quote Estimator
- * 4-step flow: Contact Gate → Site Type → Hours + Frequency → Estimate
- * Contact details required before estimator is accessible.
- * Pricing at £27/hr calculated server-side.
+ * Side-by-side layout: Calculator (left) + Contact Form (right)
+ * Calculator is immediately interactive; price is gated behind contact form.
+ * 2-hour minimum. 30+ weekly hours triggers site-visit recommendation.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,43 +11,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // STATE
     // ========================================
 
-    var contactDetails = { name: '', email: '', phone: '', company: '', postcode: '' };
     var selectedSiteType = null;
     var selectedHours = null;
     var selectedFrequency = null;
-    var currentStep = 1;
+    var currentCalcStep = 1;
+    var contactFormValid = false;
+    var estimateSubmitted = false;
+    var pendingEstimate = null; // holds estimate data when form wasn't filled
 
     // ========================================
     // DOM ELEMENTS
     // ========================================
 
-    var steps = {
-        1: document.getElementById('step-1'),
-        2: document.getElementById('step-2'),
-        3: document.getElementById('step-3'),
-        4: document.getElementById('step-4')
+    var calcSteps = {
+        1: document.getElementById('calc-step-1'),
+        2: document.getElementById('calc-step-2'),
+        3: document.getElementById('calc-step-3')
     };
 
-    var progressSteps = document.querySelectorAll('.progress-step');
-    var progressLines = {
-        1: document.getElementById('progress-line-1'),
-        2: document.getElementById('progress-line-2'),
-        3: document.getElementById('progress-line-3')
-    };
+    var calcDots = document.querySelectorAll('.calc-dot');
 
-    // Step 1: Gate elements
+    // Form elements
     var gateName = document.getElementById('gate-name');
     var gateEmail = document.getElementById('gate-email');
     var gatePhone = document.getElementById('gate-phone');
     var gateCompany = document.getElementById('gate-company');
     var gatePostcode = document.getElementById('gate-postcode');
-    var gateContinue = document.getElementById('gate-continue');
     var gateErrors = document.getElementById('gate-errors');
+    var formSubmitBtn = document.getElementById('form-submit-btn');
 
-    // Step 2: Site type
+    // Calculator elements
     var siteTypeCards = document.querySelectorAll('.site-type-card');
-
-    // Step 3: Hours & Frequency
     var hoursOptions = document.querySelectorAll('.hours-option');
     var freqOptions = document.querySelectorAll('.freq-option');
     var calcBtn = document.getElementById('calc-estimate');
@@ -55,9 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Navigation
     var backTo1 = document.getElementById('back-to-1');
     var backTo2 = document.getElementById('back-to-2');
-    var backTo3 = document.getElementById('back-to-3');
 
-    // Result elements
+    // Results elements
     var resultSiteType = document.getElementById('result-site-type');
     var cellTypeBanner = document.getElementById('cell-type-banner');
     var cellTypeBadge = document.getElementById('cell-type-badge');
@@ -69,39 +62,117 @@ document.addEventListener('DOMContentLoaded', function() {
     var resultFrequency = document.getElementById('result-frequency');
     var resultWeeklyHours = document.getElementById('result-weekly-hours');
 
+    // Overlay & banners
+    var resultGateOverlay = document.getElementById('result-gate-overlay');
+    var overlayToForm = document.getElementById('overlay-to-form');
+    var siteVisitBanner = document.getElementById('site-visit-banner');
+    var estimateDisclaimer = document.getElementById('estimate-disclaimer');
+    var weeklyHoursWarning = document.getElementById('weekly-hours-warning');
+    var warningHoursTotal = document.getElementById('warning-hours-total');
+
     // ========================================
-    // STEP NAVIGATION
+    // CALCULATOR STEP NAVIGATION
     // ========================================
 
-    function goToStep(step) {
-        if (steps[currentStep]) {
-            steps[currentStep].classList.remove('active');
+    function goToCalcStep(step) {
+        if (calcSteps[currentCalcStep]) {
+            calcSteps[currentCalcStep].classList.remove('active');
         }
 
-        currentStep = step;
-        if (steps[currentStep]) {
-            steps[currentStep].classList.add('active');
+        currentCalcStep = step;
+        if (calcSteps[currentCalcStep]) {
+            calcSteps[currentCalcStep].classList.add('active');
         }
 
-        progressSteps.forEach(function(el) {
-            var s = parseInt(el.dataset.step);
-            el.classList.toggle('active', s <= step);
-            el.classList.toggle('completed', s < step);
+        // Update progress dots
+        calcDots.forEach(function(dot) {
+            var s = parseInt(dot.dataset.step);
+            dot.classList.toggle('active', s <= step);
+            dot.classList.toggle('completed', s < step);
         });
 
-        if (progressLines[1]) progressLines[1].style.width = step >= 2 ? '100%' : '0%';
-        if (progressLines[2]) progressLines[2].style.width = step >= 3 ? '100%' : '0%';
-        if (progressLines[3]) progressLines[3].style.width = step >= 4 ? '100%' : '0%';
-
-        var estimator = document.querySelector('.estimator-container');
-        if (estimator) {
-            estimator.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll calculator into view
+        var calculator = document.querySelector('.estimator-calculator');
+        if (calculator) {
+            calculator.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
     // ========================================
-    // STEP 1: CONTACT DETAILS GATE
+    // SITE TYPE SELECTION (Step 1)
     // ========================================
+
+    siteTypeCards.forEach(function(card) {
+        card.addEventListener('click', function() {
+            siteTypeCards.forEach(function(c) { c.classList.remove('selected'); });
+            card.classList.add('selected');
+            selectedSiteType = card.dataset.type;
+
+            setTimeout(function() {
+                goToCalcStep(2);
+            }, 300);
+        });
+    });
+
+    // ========================================
+    // HOURS & FREQUENCY (Step 2)
+    // ========================================
+
+    hoursOptions.forEach(function(opt) {
+        opt.addEventListener('click', function() {
+            hoursOptions.forEach(function(o) { o.classList.remove('selected'); });
+            opt.classList.add('selected');
+            selectedHours = parseFloat(opt.dataset.hours);
+            checkStep2Ready();
+        });
+    });
+
+    freqOptions.forEach(function(opt) {
+        opt.addEventListener('click', function() {
+            freqOptions.forEach(function(o) { o.classList.remove('selected'); });
+            opt.classList.add('selected');
+            selectedFrequency = parseInt(opt.dataset.freq);
+            checkStep2Ready();
+        });
+    });
+
+    function checkStep2Ready() {
+        var ready = !!(selectedHours && selectedFrequency);
+        if (calcBtn) calcBtn.disabled = !ready;
+
+        // Show/hide 30+ hours warning
+        if (ready && weeklyHoursWarning) {
+            var total = selectedHours * selectedFrequency;
+            if (total >= 30) {
+                if (warningHoursTotal) warningHoursTotal.textContent = total;
+                weeklyHoursWarning.style.display = 'flex';
+            } else {
+                weeklyHoursWarning.style.display = 'none';
+            }
+        } else if (weeklyHoursWarning) {
+            weeklyHoursWarning.style.display = 'none';
+        }
+
+        updateSubmitButton();
+    }
+
+    // ========================================
+    // CONTACT FORM VALIDATION (real-time)
+    // ========================================
+
+    function validateForm() {
+        var name = gateName ? gateName.value.trim() : '';
+        var email = gateEmail ? gateEmail.value.trim() : '';
+        var phone = gatePhone ? gatePhone.value.trim() : '';
+
+        contactFormValid = (
+            name.length >= 2 &&
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+            phone.replace(/\D/g, '').length >= 10
+        );
+
+        updateSubmitButton();
+    }
 
     // Phone formatting
     if (gatePhone) {
@@ -116,16 +187,75 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             e.target.value = value;
+            validateForm();
         });
     }
 
-    if (gateContinue) {
-        gateContinue.addEventListener('click', function() {
+    // Real-time validation on all form fields
+    [gateName, gateEmail, gatePhone, gateCompany, gatePostcode].forEach(function(field) {
+        if (field) {
+            field.addEventListener('input', validateForm);
+            field.addEventListener('change', validateForm);
+        }
+    });
+
+    // Allow Enter key in form to submit
+    [gateName, gateEmail, gatePhone, gateCompany, gatePostcode].forEach(function(field) {
+        if (field) {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (formSubmitBtn && !formSubmitBtn.disabled) formSubmitBtn.click();
+                }
+            });
+        }
+    });
+
+    // ========================================
+    // SUBMIT BUTTON STATE
+    // ========================================
+
+    function updateSubmitButton() {
+        if (!formSubmitBtn) return;
+
+        // Button is enabled when BOTH calculator selections AND form fields are complete
+        var calcComplete = !!(selectedSiteType && selectedHours && selectedFrequency);
+        formSubmitBtn.disabled = !(calcComplete && contactFormValid);
+    }
+
+    // ========================================
+    // NAVIGATION BUTTONS
+    // ========================================
+
+    if (backTo1) backTo1.addEventListener('click', function() { goToCalcStep(1); });
+    if (backTo2) backTo2.addEventListener('click', function() { goToCalcStep(2); });
+
+    // Calculator "Get My Estimate" → advance to step 3
+    if (calcBtn) {
+        calcBtn.addEventListener('click', function() {
+            goToCalcStep(3);
+
+            if (contactFormValid) {
+                // Form already filled: fire API call immediately
+                fetchEstimate();
+            } else {
+                // Show overlay with placeholder values
+                showPlaceholderResults();
+                showOverlay();
+            }
+        });
+    }
+
+    // Form "Get My Estimate" button
+    if (formSubmitBtn) {
+        formSubmitBtn.addEventListener('click', function() {
+            // Clear previous errors
             if (gateErrors) {
-                gateErrors.innerHTML = '';
+                gateErrors.textContent = '';
                 gateErrors.className = 'form-messages';
             }
 
+            // Validate
             var errors = [];
             var name = gateName ? gateName.value.trim() : '';
             var email = gateEmail ? gateEmail.value.trim() : '';
@@ -137,89 +267,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (errors.length > 0) {
                 if (gateErrors) {
-                    gateErrors.innerHTML = errors.join('<br>');
+                    gateErrors.textContent = '';
+                    errors.forEach(function(msg, i) {
+                        if (i > 0) gateErrors.appendChild(document.createElement('br'));
+                        gateErrors.appendChild(document.createTextNode(msg));
+                    });
                     gateErrors.className = 'form-messages error';
                 }
                 return;
             }
 
-            // Store contact details
-            contactDetails.name = name;
-            contactDetails.email = email;
-            contactDetails.phone = phone;
-            contactDetails.company = gateCompany ? gateCompany.value.trim() : '';
-            contactDetails.postcode = gatePostcode ? gatePostcode.value.trim() : '';
+            // If not on step 3 yet, go there
+            if (currentCalcStep !== 3) {
+                goToCalcStep(3);
+                showPlaceholderResults();
+            }
 
-            goToStep(2);
+            fetchEstimate();
         });
     }
 
-    // Allow Enter key to submit gate form
-    [gateName, gateEmail, gatePhone, gateCompany, gatePostcode].forEach(function(field) {
-        if (field) {
-            field.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (gateContinue) gateContinue.click();
-                }
-            });
-        }
-    });
-
-    // ========================================
-    // STEP 2: SITE TYPE SELECTION
-    // ========================================
-
-    siteTypeCards.forEach(function(card) {
-        card.addEventListener('click', function() {
-            siteTypeCards.forEach(function(c) { c.classList.remove('selected'); });
-            card.classList.add('selected');
-            selectedSiteType = card.dataset.type;
-
-            setTimeout(function() {
-                goToStep(3);
-            }, 300);
+    // Overlay "Enter Details" → scroll to form + focus name
+    if (overlayToForm) {
+        overlayToForm.addEventListener('click', function() {
+            var formPanel = document.querySelector('.estimator-form-panel');
+            if (formPanel) {
+                formPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            if (gateName) {
+                setTimeout(function() { gateName.focus(); }, 500);
+            }
         });
-    });
-
-    // ========================================
-    // STEP 3: HOURS & FREQUENCY
-    // ========================================
-
-    hoursOptions.forEach(function(opt) {
-        opt.addEventListener('click', function() {
-            hoursOptions.forEach(function(o) { o.classList.remove('selected'); });
-            opt.classList.add('selected');
-            selectedHours = parseFloat(opt.dataset.hours);
-            checkStep3Ready();
-        });
-    });
-
-    freqOptions.forEach(function(opt) {
-        opt.addEventListener('click', function() {
-            freqOptions.forEach(function(o) { o.classList.remove('selected'); });
-            opt.classList.add('selected');
-            selectedFrequency = parseInt(opt.dataset.freq);
-            checkStep3Ready();
-        });
-    });
-
-    function checkStep3Ready() {
-        if (calcBtn) {
-            calcBtn.disabled = !(selectedHours && selectedFrequency);
-        }
     }
 
     // ========================================
-    // NAVIGATION BUTTONS
+    // OVERLAY MANAGEMENT
     // ========================================
 
-    if (backTo1) backTo1.addEventListener('click', function() { goToStep(1); });
-    if (backTo2) backTo2.addEventListener('click', function() { goToStep(2); });
-    if (backTo3) backTo3.addEventListener('click', function() { goToStep(3); });
+    function showOverlay() {
+        if (resultGateOverlay) resultGateOverlay.style.display = 'flex';
+        var priceCard = document.getElementById('estimate-price-card');
+        if (priceCard) priceCard.classList.add('blurred');
+    }
 
-    if (calcBtn) {
-        calcBtn.addEventListener('click', function() { fetchEstimate(); });
+    function hideOverlay() {
+        if (resultGateOverlay) resultGateOverlay.style.display = 'none';
+        var priceCard = document.getElementById('estimate-price-card');
+        if (priceCard) priceCard.classList.remove('blurred');
+    }
+
+    // ========================================
+    // PLACEHOLDER RESULTS (shown behind blur)
+    // ========================================
+
+    function showPlaceholderResults() {
+        if (resultSiteType) resultSiteType.textContent = selectedSiteType + ' Cleaning';
+        if (resultWeekly) resultWeekly.textContent = '\u00A3***';
+        if (resultMonthly) resultMonthly.textContent = '\u00A3***';
+        var weeklyHrs = selectedHours * selectedFrequency;
+        if (resultHoursSummary) resultHoursSummary.textContent = weeklyHrs + ' hours per week';
+        if (resultHours) resultHours.textContent = selectedHours + ' hours';
+        if (resultFrequency) resultFrequency.textContent = selectedFrequency + 'x per week';
+        if (resultWeeklyHours) resultWeeklyHours.textContent = weeklyHrs + ' hours';
+        if (cellTypeBanner) cellTypeBanner.style.display = 'none';
     }
 
     // ========================================
@@ -227,8 +337,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
 
     async function fetchEstimate() {
-        calcBtn.disabled = true;
-        calcBtn.textContent = 'Calculating...';
+        formSubmitBtn.disabled = true;
+        formSubmitBtn.textContent = 'Calculating...';
 
         try {
             var response = await fetch('/api/estimate', {
@@ -238,11 +348,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     siteType: selectedSiteType,
                     hours: selectedHours,
                     frequency: selectedFrequency,
-                    name: contactDetails.name,
-                    email: contactDetails.email,
-                    phone: contactDetails.phone,
-                    company: contactDetails.company,
-                    postcode: contactDetails.postcode,
+                    name: gateName ? gateName.value.trim() : '',
+                    email: gateEmail ? gateEmail.value.trim() : '',
+                    phone: gatePhone ? gatePhone.value.trim() : '',
+                    company: gateCompany ? gateCompany.value.trim() : '',
+                    postcode: gatePostcode ? gatePostcode.value.trim() : '',
                     website: document.getElementById('website') ? document.getElementById('website').value : ''
                 })
             });
@@ -250,16 +360,25 @@ document.addEventListener('DOMContentLoaded', function() {
             var data = await response.json();
 
             if (data.success) {
+                estimateSubmitted = true;
+                hideOverlay();
                 showEstimate(data.estimate);
             } else {
-                alert(data.errors ? data.errors.join('\n') : data.error || 'Unable to calculate estimate. Please try again.');
+                var errMsg = data.errors ? data.errors.join('\n') : data.error || 'Unable to calculate estimate. Please try again.';
+                if (gateErrors) {
+                    gateErrors.textContent = errMsg;
+                    gateErrors.className = 'form-messages error';
+                }
             }
         } catch (err) {
-            alert('Something went wrong. Please try again.');
+            if (gateErrors) {
+                gateErrors.textContent = 'Something went wrong. Please try again.';
+                gateErrors.className = 'form-messages error';
+            }
         }
 
-        calcBtn.disabled = false;
-        calcBtn.innerHTML = 'Get My Estimate <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>';
+        formSubmitBtn.disabled = false;
+        formSubmitBtn.textContent = 'Get My Estimate';
     }
 
     function showEstimate(estimate) {
@@ -268,7 +387,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Cell Type classification
         if (cellTypeBadge) cellTypeBadge.textContent = 'Cell Type ' + estimate.cellType;
         if (cellTypeLabel) cellTypeLabel.textContent = 'Cell Type ' + estimate.cellType + ' \u2014 ' + estimate.cellLabel;
-        if (cellTypeBanner) cellTypeBanner.className = 'cell-type-banner cell-type-' + estimate.cellType.toLowerCase();
+        if (cellTypeBanner) {
+            cellTypeBanner.className = 'cell-type-banner cell-type-' + estimate.cellType.toLowerCase();
+            cellTypeBanner.style.display = 'flex';
+        }
 
         // Weekly price
         if (resultWeekly) resultWeekly.textContent = '\u00A3' + estimate.weeklyPrice.toLocaleString('en-GB');
@@ -284,7 +406,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (resultFrequency) resultFrequency.textContent = selectedFrequency + 'x per week';
         if (resultWeeklyHours) resultWeeklyHours.textContent = estimate.weeklyHours + ' hours';
 
-        goToStep(4);
+        // Show disclaimer on all results
+        if (estimateDisclaimer) estimateDisclaimer.style.display = 'flex';
+
+        // Show site visit banner for 30+ hours
+        if (estimate.siteVisitRecommended && siteVisitBanner) {
+            siteVisitBanner.style.display = 'flex';
+        } else if (siteVisitBanner) {
+            siteVisitBanner.style.display = 'none';
+        }
+
+        // Make sure we're on step 3
+        if (currentCalcStep !== 3) goToCalcStep(3);
     }
 
 });
