@@ -208,7 +208,7 @@ async function sendAutoReplyEmail(submission) {
   <div class="wrapper">
     <div class="card">
       <div class="header">
-        <h1>Signature Cleans</h1>
+        <img src="https://signature-cleans.co.uk/images/logo-cropped.png" alt="Signature Cleans" style="max-width:200px;height:auto;margin-bottom:8px;">
       </div>
       <div class="body">
         <p class="greeting">Hi ${escHTML(submission.name)},</p>
