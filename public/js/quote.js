@@ -363,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 estimateSubmitted = true;
                 hideOverlay();
                 showEstimate(data.estimate);
+                showFormSuccess();
             } else {
                 var errMsg = data.errors ? data.errors.join('\n') : data.error || 'Unable to calculate estimate. Please try again.';
                 if (gateErrors) {
@@ -418,6 +419,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Make sure we're on step 3
         if (currentCalcStep !== 3) goToCalcStep(3);
+    }
+
+    // ========================================
+    // FORM SUCCESS STATE
+    // ========================================
+
+    function showFormSuccess() {
+        var formCard = document.querySelector('.form-panel-card');
+        if (!formCard) return;
+
+        var userName = gateName ? gateName.value.trim().split(' ')[0] : '';
+
+        formCard.innerHTML =
+            '<div style="text-align:center;padding:20px 0;">' +
+                '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" style="margin-bottom:16px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+                '<h3 style="font-size:1.25rem;font-weight:700;margin-bottom:8px;">Thank you' + (userName ? ', ' + userName : '') + '!</h3>' +
+                '<p style="color:#86868b;font-size:0.9375rem;line-height:1.6;margin-bottom:20px;">Your estimate is ready. One of our team will review your requirements and be in touch within 24 hours.</p>' +
+                '<div style="background:#f5f5f7;border-radius:12px;padding:16px;text-align:left;margin-bottom:16px;">' +
+                    '<p style="font-size:0.8125rem;color:#86868b;margin-bottom:4px;">Need to speak to someone now?</p>' +
+                    '<a href="tel:01392931035" style="font-size:1.125rem;font-weight:700;color:#1d1d1f;text-decoration:none;">01392 931035</a>' +
+                '</div>' +
+                '<p style="font-size:0.75rem;color:#86868b;">We\'ve also sent a confirmation to your email.</p>' +
+            '</div>';
     }
 
 });
