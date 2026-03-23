@@ -666,6 +666,10 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
       return res.status(400).json({ success: false, error: 'Invalid input' });
     }
 
+    // Whitelist site types (contain / which validator.escape would encode)
+    const validSiteTypes = ['Office/Commercial', 'Dental/Medical', 'Hospitality/Venue', 'Education/Institutional', 'Welfare/Construction', 'Specialist/Industrial'];
+    const cleanSiteType = validSiteTypes.includes(siteType) ? siteType : sanitize(siteType || '');
+
     // Calculate estimate at £27/hr
     const weeklyHours = hrs * freq;
     const weeklyPrice = Math.round(weeklyHours * ESTIMATOR_CONFIG.billingRate / 5) * 5;
@@ -695,7 +699,7 @@ app.post('/api/estimate', rateLimit({ windowMs: 60000, max: 10 }), async (req, r
       serviceType: 'contract',
       frequency: String(freq),
       size: '',
-      sector: sanitize(siteType || ''),
+      sector: cleanSiteType,
       leadSource: 'website-estimator',
       estimate: estimateStr,
       estimatedHours: String(hrs),
