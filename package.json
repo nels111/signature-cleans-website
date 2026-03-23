@@ -18,11 +18,14 @@
     "helmet": "^7.1.0",
     "multer": "^2.1.1",
     "nodemailer": "^7.0.12",
+    "sanitize-html": "^2.13.0",
     "validator": "^13.11.0"
   },
   "devDependencies": {
-    "dotenv": "^17.2.3",
     "nodemon": "^3.0.3"
+  },
+  "optionalDependencies": {
+    "dotenv": "^17.2.3"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -9,6 +9,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
 const https = require('https');
+const sanitizeHtml = require('sanitize-html');
+const rateLimit = require('express-rate-limit');
 
 module.exports = function createAdminRouter(db) {
   const router = express.Router();
@@ -530,11 +532,13 @@ module.exports = function createAdminRouter(db) {
 </html>`);
   });
 
-  router.post('/login', (req, res) => {
-    const adminPass = process.env.ADMIN_PASSWORD || 'signature2025';
+  const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: 'Too many login attempts. Please try again in 15 minutes.' });
+
+  router.post('/login', loginLimiter, (req, res) => {
+    const adminPass = process.env.ADMIN_PASSWORD || 'signature2025'; // ADMIN_PASSWORD must be set in production (IONOS VPS env var)
     if (req.body.password === adminPass) {
       const token = createSession();
-      res.setHeader('Set-Cookie', `admin_session=${token}; HttpOnly; Path=/admin; Max-Age=86400; SameSite=Lax`);
+      res.setHeader('Set-Cookie', `admin_session=${token}; HttpOnly; Secure; Path=/admin; Max-Age=86400; SameSite=Strict`);
       return res.redirect('/admin/dashboard');
     }
     res.redirect('/admin/login?error=1');
@@ -633,10 +637,10 @@ module.exports = function createAdminRouter(db) {
               <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th></tr></thead>
               <tbody>
                 ${recentSubs.map(s => `<tr>
-                  <td><span class="badge ${s.type === 'quote' ? 'badge-blue' : 'badge-purple'}">${s.type}</span></td>
+                  <td><span class="badge ${s.type === 'quote' ? 'badge-blue' : 'badge-purple'}">${escHTML(s.type)}</span></td>
                   <td>${new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
-                  <td>${s.name}</td>
-                  <td><a href="mailto:${s.email}" style="color:#2271b1;text-decoration:none;">${s.email}</a></td>
+                  <td>${escHTML(s.name)}</td>
+                  <td><a href="mailto:${escHTML(s.email)}" style="color:#2271b1;text-decoration:none;">${escHTML(s.email)}</a></td>
                 </tr>`).join('')}
               </tbody>
             </table>` : '<div class="inside"><p style="color:#646970;">No enquiries yet.</p></div>'}
@@ -1056,11 +1060,13 @@ module.exports = function createAdminRouter(db) {
     const metaTitle = post.meta_title || post.title + ' | Signature Cleans';
     const metaDesc = post.meta_description || post.excerpt || '';
     const canonical = 'https://signature-cleans.co.uk/blog/' + post.slug + '.html';
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    const createdDate = new Date(post.created_at);
+    const dateISO = createdDate.toISOString().split('T')[0];
+    const dateYM = dateISO.substring(0, 7);
+    const dateStr = createdDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
     const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
@@ -1075,10 +1081,11 @@ module.exports = function createAdminRouter(db) {
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/blog.css">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"Article","headline":"${escJSON(post.title)}","description":"${escJSON(metaDesc)}","author":{"@type":"Organization","name":"Signature Cleans"},"publisher":{"@type":"Organization","name":"Signature Cleans","logo":{"@type":"ImageObject","url":"https://signature-cleans.co.uk/images/logo.jpeg"}},"url":"${canonical}","mainEntityOfPage":"${canonical}"${post.featured_image ? ',"image":"https://signature-cleans.co.uk' + post.featured_image + '"' : ''}}
+    {"@context":"https://schema.org","@type":"Article","headline":"${escJSON(post.title)}","description":"${escJSON(metaDesc)}","author":{"@type":"Organization","name":"Signature Cleans"},"publisher":{"@type":"Organization","name":"Signature Cleans","logo":{"@type":"ImageObject","url":"https://signature-cleans.co.uk/images/logo.jpeg"}},"datePublished":"${dateISO}","url":"${canonical}","mainEntityOfPage":"${canonical}"${post.featured_image ? ',"image":"https://signature-cleans.co.uk' + post.featured_image + '"' : ''}}
     </script>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <div class="nav-container">
@@ -1118,6 +1125,7 @@ module.exports = function createAdminRouter(db) {
             </button>
         </div>
     </nav>
+    <div id="main-content"></div>
 
     <!-- Blog Post -->
     <article class="blog-post">
@@ -1128,12 +1136,12 @@ module.exports = function createAdminRouter(db) {
             <div class="post-meta">
                 <span>${escHTML(post.read_time)}</span>
                 <span>&bull;</span>
-                <span>${dateStr}</span>
+                <time datetime="${dateYM}">${dateStr}</time>
             </div>
         </header>
         ${post.featured_image ? '<img src="' + post.featured_image + '" alt="' + escHTML(post.title) + '" style="max-width:720px;width:100%;margin:0 auto var(--space-md);display:block;border-radius:12px;">' : ''}
         <div class="post-content">
-            ${post.content}
+            ${cleanBlogHTML(post.content)}
 
             <div class="post-cta">
                 <h3>Ready for better cleaning?</h3>
@@ -1148,7 +1156,7 @@ module.exports = function createAdminRouter(db) {
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <img src="../images/logo-cropped.png" alt="Signature Cleans" class="footer-logo-img">
+                    <img src="../images/logo-cropped.png" alt="Signature Cleans" class="footer-logo-img" loading="lazy">
                     <p class="footer-tagline">Peace of Mind, Every Time</p>
                     <p class="footer-contact">
                         <a href="tel:01392931035">01392 931035</a><br>
@@ -1168,7 +1176,7 @@ module.exports = function createAdminRouter(db) {
                 <div class="footer-links">
                     <h4>Sectors</h4>
                     <a href="../services/office-cleaning.html">Offices</a>
-                    <a href="../services/medical-dental-cleaning.html">Medical & Dental</a>
+                    <a href="../services/medical-dental-cleaning.html">Medical &amp; Dental</a>
                     <a href="../services/school-cleaning.html">Schools</a>
                     <a href="../services/hospitality-cleaning.html">Hospitality</a>
                     <a href="../services/construction-welfare-cleaning.html">Construction</a>
@@ -1189,17 +1197,17 @@ module.exports = function createAdminRouter(db) {
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; ${now.getFullYear()} Signature Cleans. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} Signature Cleans. All rights reserved.</p>
                 <div class="footer-legal">
                     <a href="../privacy.html">Privacy</a>
                     <a href="../cookies.html">Cookies</a>
                     <a href="../terms.html">Terms</a>
                 </div>
                 <div class="footer-social">
-                    <a href="https://www.linkedin.com/company/100613310/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                    <a href="https://www.linkedin.com/company/100613310/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </a>
-                    <a href="https://www.facebook.com/profile.php?id=61554538772884" target="_blank" rel="noopener" aria-label="Facebook">
+                    <a href="https://www.facebook.com/profile.php?id=61554538772884" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     </a>
                 </div>
@@ -1225,6 +1233,29 @@ module.exports = function createAdminRouter(db) {
   function escJSON(str) {
     if (!str) return '';
     return String(str).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
+  }
+
+  // Sanitize rich text HTML — allow safe tags only, strip scripts/iframes/event handlers
+  function cleanBlogHTML(html) {
+    if (!html) return '';
+    return sanitizeHtml(html, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'figure', 'figcaption', 'mark', 'del', 'ins', 'sub', 'sup', 'span', 'div']),
+      allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        img: ['src', 'alt', 'title', 'width', 'height', 'loading', 'style'],
+        a: ['href', 'target', 'rel', 'title'],
+        span: ['class', 'style'],
+        div: ['class', 'style'],
+        h1: ['id', 'class'], h2: ['id', 'class'], h3: ['id', 'class'],
+        h4: ['id', 'class'], h5: ['id', 'class'], h6: ['id', 'class'],
+        p: ['class', 'style'],
+        ul: ['class'], ol: ['class', 'start'], li: ['class'],
+        blockquote: ['class', 'cite'],
+        table: ['class'], thead: [], tbody: [], tr: [], th: ['scope'], td: ['colspan', 'rowspan']
+      },
+      allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+      disallowedTagsMode: 'discard'
+    });
   }
 
 
@@ -1278,7 +1309,7 @@ module.exports = function createAdminRouter(db) {
     });
 
     const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -1294,6 +1325,7 @@ module.exports = function createAdminRouter(db) {
     <link rel="stylesheet" href="css/blog.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <div class="nav-container">
@@ -1333,6 +1365,7 @@ module.exports = function createAdminRouter(db) {
             </button>
         </div>
     </nav>
+    <div id="main-content"></div>
 
     <!-- Blog Hero -->
     <section class="blog-hero">
@@ -1365,7 +1398,7 @@ ${postCards}
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <img src="images/logo-cropped.png" alt="Signature Cleans" class="footer-logo-img">
+                    <img src="images/logo-cropped.png" alt="Signature Cleans" class="footer-logo-img" loading="lazy">
                     <p class="footer-tagline">Peace of Mind, Every Time</p>
                     <p class="footer-contact">
                         <a href="tel:01392931035">01392 931035</a><br>
@@ -1385,7 +1418,7 @@ ${postCards}
                 <div class="footer-links">
                     <h4>Sectors</h4>
                     <a href="services/office-cleaning.html">Offices</a>
-                    <a href="services/medical-dental-cleaning.html">Medical & Dental</a>
+                    <a href="services/medical-dental-cleaning.html">Medical &amp; Dental</a>
                     <a href="services/school-cleaning.html">Schools</a>
                     <a href="services/hospitality-cleaning.html">Hospitality</a>
                     <a href="services/construction-welfare-cleaning.html">Construction</a>
@@ -1413,10 +1446,10 @@ ${postCards}
                     <a href="terms.html">Terms</a>
                 </div>
                 <div class="footer-social">
-                    <a href="https://www.linkedin.com/company/100613310/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                    <a href="https://www.linkedin.com/company/100613310/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </a>
-                    <a href="https://www.facebook.com/profile.php?id=61554538772884" target="_blank" rel="noopener" aria-label="Facebook">
+                    <a href="https://www.facebook.com/profile.php?id=61554538772884" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     </a>
                 </div>
@@ -1450,6 +1483,19 @@ ${postCards}
   function propagateSiteSettings(settings) {
     const publicDir = path.join(__dirname, 'public');
 
+    // Sanitize settings for safe HTML insertion
+    const safe = {
+      phone: escHTML(settings.phone || ''),
+      phone_link: escHTML(settings.phone_link || ''),
+      email: escHTML(settings.email || ''),
+      tagline: escHTML(settings.tagline || ''),
+      accreditation_1: escHTML(settings.accreditation_1 || ''),
+      accreditation_2: escHTML(settings.accreditation_2 || ''),
+      copyright_text: escHTML(settings.copyright_text || ''),
+      linkedin_url: escHTML(settings.linkedin_url || ''),
+      facebook_url: escHTML(settings.facebook_url || '')
+    };
+
     function processFile(filePath) {
       let html = fs.readFileSync(filePath, 'utf-8');
       let changed = false;
@@ -1461,9 +1507,9 @@ ${postCards}
         if (content.includes('editable:')) return match;
         // Only replace phone links that look like the old number
         if (open.includes('tel:')) {
-          const newOpen = open.replace(/href="tel:[^"]*"/, 'href="tel:' + settings.phone_link + '"');
+          const newOpen = open.replace(/href="tel:[^"]*"/, 'href="tel:' + safe.phone_link + '"');
           changed = true;
-          return newOpen + settings.phone + close;
+          return newOpen + safe.phone + close;
         }
         return match;
       });
@@ -1473,14 +1519,14 @@ ${postCards}
       html = html.replace(emailRegex, (match, prefix, middle, content, close) => {
         if (content.includes('editable:')) return match;
         changed = true;
-        return prefix + settings.email + middle + settings.email + close;
+        return prefix + safe.email + middle + safe.email + close;
       });
 
       // Update footer tagline
       if (html.includes('class="footer-tagline"')) {
         html = html.replace(/(<p class="footer-tagline">)(.*?)(<\/p>)/g, (match, open, content, close) => {
           changed = true;
-          return open + settings.tagline + close;
+          return open + safe.tagline + close;
         });
       }
 
@@ -1488,27 +1534,27 @@ ${postCards}
       if (html.includes('class="footer-accreditations"')) {
         html = html.replace(/(<div class="footer-accreditations">\s*<span>)(.*?)(<\/span>\s*<span>)(.*?)(<\/span>\s*<\/div>)/gs, (match, p1, a1, p2, a2, p3) => {
           changed = true;
-          return p1 + settings.accreditation_1 + p2 + settings.accreditation_2 + p3;
+          return p1 + safe.accreditation_1 + p2 + safe.accreditation_2 + p3;
         });
       }
 
       // Update copyright text
       html = html.replace(/(<div class="footer-bottom">\s*<p>)(.*?)(<\/p>)/s, (match, open, content, close) => {
         changed = true;
-        return open + settings.copyright_text + close;
+        return open + safe.copyright_text + close;
       });
 
       // Update social links
       if (settings.linkedin_url) {
         html = html.replace(/(class="footer-social"[\s\S]*?<a\s+href=")[^"]*("\s+target="_blank"[^>]*aria-label="LinkedIn")/g, (match, prefix, suffix) => {
           changed = true;
-          return prefix + settings.linkedin_url + suffix;
+          return prefix + safe.linkedin_url + suffix;
         });
       }
       if (settings.facebook_url) {
         html = html.replace(/(class="footer-social"[\s\S]*?<a\s+href=")[^"]*("\s+target="_blank"[^>]*aria-label="Facebook")/g, (match, prefix, suffix) => {
           changed = true;
-          return prefix + settings.facebook_url + suffix;
+          return prefix + safe.facebook_url + suffix;
         });
       }
 
@@ -2383,11 +2429,11 @@ ${postCards}
           <thead><tr><th>Type</th><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Service</th><th>Estimate</th><th>Details</th></tr></thead>
           <tbody>
             ${submissions.map(s => `<tr>
-              <td><span class="badge ${s.type === 'quote' ? 'badge-blue' : 'badge-purple'}">${s.type}</span></td>
+              <td><span class="badge ${s.type === 'quote' ? 'badge-blue' : 'badge-purple'}">${escHTML(s.type)}</span></td>
               <td style="white-space:nowrap;">${new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
               <td><strong>${escHTML(s.name)}</strong></td>
-              <td><a href="mailto:${s.email}" style="color:#2563eb;">${s.email}</a></td>
-              <td>${s.phone ? '<a href="tel:' + s.phone + '" style="color:#2563eb;">' + s.phone + '</a>' : '-'}</td>
+              <td><a href="mailto:${escHTML(s.email)}" style="color:#2563eb;">${escHTML(s.email)}</a></td>
+              <td>${s.phone ? '<a href="tel:' + escHTML(s.phone) + '" style="color:#2563eb;">' + escHTML(s.phone) + '</a>' : '-'}</td>
               <td>${escHTML(s.company) || '-'}</td>
               <td>${escHTML(s.serviceType) || '-'}</td>
               <td>${s.estimate ? '<strong>&pound;' + escHTML(s.estimate) + '</strong>' : '-'}</td>

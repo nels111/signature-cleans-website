@@ -1,4 +1,25 @@
 
+/* Skip to content */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-accent, #2563eb);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 0 0 8px 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 9999;
+    text-decoration: none;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
 /* Topbar */
 .topbar {
     position: relative;
@@ -92,8 +113,8 @@
     gap: 60px;
     animation: scroll 40s linear infinite;
     width: max-content;
-    will-change: transform;
 }
+
 .logo-item {
     flex-shrink: 0;
     display: flex;
@@ -416,16 +437,15 @@ a {
     padding-top: var(--space-sm);
     margin-top: var(--space-sm);
     border-top: 1px solid var(--color-border);
+    width: 100%;
+    flex-basis: 100%;
 }
 
 .nav-dropdown-all:hover {
     color: var(--color-primary);
 }
 
-.nav-dropdown-all {
-    width: 100%;
-    flex-basis: 100%;
-}
+/* M30: merged duplicate - width/flex-basis into main .nav-dropdown-all above */
 
 /* ============================================
    HERO SECTION
@@ -1142,19 +1162,40 @@ a {
         --space-xl: 4rem;
         --space-lg: 2rem;
     }
-    
+
     .hero {
         min-height: auto;
         padding-top: 120px;
         padding-bottom: 80px;
     }
-    
+
     .hero-image {
         display: none;
     }
-    
+
     .hero-scroll {
         display: none;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .fade-in {
+        opacity: 1;
+        transform: none;
+    }
+
+    .logo-track {
+        animation: none;
     }
 }
 

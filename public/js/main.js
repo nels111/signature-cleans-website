@@ -29,14 +29,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Navbar Background on Scroll
     const nav = document.getElementById('nav');
-    
-    window.addEventListener('scroll', function() {
-        if (window.scrollY > 50) {
-            nav.style.background = 'rgba(255, 255, 255, 0.95)';
-        } else {
-            nav.style.background = 'rgba(255, 255, 255, 0.8)';
-        }
-    });
+
+    if (nav) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(255, 255, 255, 0.95)';
+            } else {
+                nav.style.background = 'rgba(255, 255, 255, 0.8)';
+            }
+        });
+    }
     
     // Animated Counter
     const counters = document.querySelectorAll('.stat-number');
@@ -100,9 +102,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     block: 'start'
                 });
                 // Close mobile nav if open
-                if (navLinks.classList.contains('active')) {
+                if (navLinks && navLinks.classList.contains('active')) {
                     navLinks.classList.remove('active');
-                    navToggle.classList.remove('active');
+                    if (navToggle) navToggle.classList.remove('active');
                 }
             }
         });
@@ -114,8 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (logoCarousel && logoTrack) {
         let isPaused = false;
-        let startX = 0;
-        let scrollLeft = 0;
         let isDown = false;
         
         // Clone logos for seamless infinite scroll
@@ -140,19 +140,12 @@ document.addEventListener('DOMContentLoaded', function() {
         logoCarousel.addEventListener('touchstart', (e) => {
             isDown = true;
             logoCarousel.style.cursor = 'grabbing';
-            startX = e.touches[0].pageX - logoCarousel.offsetLeft;
-            scrollLeft = logoCarousel.scrollLeft;
             logoTrack.style.animationPlayState = 'paused';
         }, { passive: true });
         
-        logoCarousel.addEventListener('touchmove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.touches[0].pageX - logoCarousel.offsetLeft;
-            const walk = (x - startX) * 2;
-            // Note: We don't actually scroll here since it's CSS animation
-            // This just pauses the animation during touch
-        }, { passive: false });
+        logoCarousel.addEventListener('touchmove', () => {
+            // Animation is already paused by touchstart — no action needed
+        }, { passive: true });
         
         logoCarousel.addEventListener('touchend', () => {
             isDown = false;

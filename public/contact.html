@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -16,6 +16,7 @@
     <!-- ADMIN-TAG --><meta name="google-site-verification" content="8GQwdJk6Da8WsIvubmz-QXZ9eUUvukBImNBdgwdPsOjQ" /><!-- /ADMIN-TAG -->
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <div class="nav-container">
@@ -55,6 +56,7 @@
             </button>
         </div>
     </nav>
+    <div id="main-content"></div>
 
     <!-- Contact Hero -->
     <section class="quote-hero">
@@ -69,7 +71,7 @@
         <div class="container">
             <div class="quote-grid">
                 <div class="quote-form-container">
-                    <form id="contact-form" class="quote-form" novalidate>
+                    <form id="contact-form" class="quote-form">
                         <!-- Honeypot -->
                         <div style="position: absolute; left: -9999px;" aria-hidden="true">
                             <label for="website">Website</label>
@@ -80,6 +82,7 @@
 
                         <div class="form-section">
                             <h3><!-- editable:contact-form-title label:Form Title type:text -->Send us a message<!-- /editable:contact-form-title --></h3>
+                            <p class="form-required-note"><span class="required">*</span> Required field</p>
 
                             <div class="form-row">
                                 <div class="form-group">
@@ -132,7 +135,7 @@
                     <div class="sidebar-card highlight">
                         <h4><!-- editable:contact-sidebar-areas-title label:Areas Title type:text -->Areas We Serve<!-- /editable:contact-sidebar-areas-title --></h4>
                         <!-- editable:contact-sidebar-areas label:Areas List type:html --><ul class="benefits-list">
-                            <li>Exeter & surrounding areas</li>
+                            <li>Exeter &amp; surrounding areas</li>
                             <li>Devon</li>
                             <li>Cornwall</li>
                             <li>Somerset</li>
@@ -154,7 +157,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <img src="images/logo-cropped.png" alt="Signature Cleans" class="footer-logo-img">
+                    <img src="images/logo-cropped.png" alt="Signature Cleans" class="footer-logo-img" loading="lazy">
                     <p class="footer-tagline">Peace of Mind, Every Time</p>
                     <p class="footer-contact">
                         <a href="tel:01392931035">01392 931035</a><br>
@@ -174,7 +177,7 @@
                 <div class="footer-links">
                     <h4>Sectors</h4>
                     <a href="services/office-cleaning.html">Offices</a>
-                    <a href="services/medical-dental-cleaning.html">Medical & Dental</a>
+                    <a href="services/medical-dental-cleaning.html">Medical &amp; Dental</a>
                     <a href="services/school-cleaning.html">Schools</a>
                     <a href="services/hospitality-cleaning.html">Hospitality</a>
                     <a href="services/construction-welfare-cleaning.html">Construction</a>
@@ -202,10 +205,10 @@
                     <a href="terms.html">Terms</a>
                 </div>
                 <div class="footer-social">
-                    <a href="https://www.linkedin.com/company/100613310/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                    <a href="https://www.linkedin.com/company/100613310/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </a>
-                    <a href="https://www.facebook.com/profile.php?id=61554538772884" target="_blank" rel="noopener" aria-label="Facebook">
+                    <a href="https://www.facebook.com/profile.php?id=61554538772884" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     </a>
                 </div>
@@ -249,13 +252,15 @@
                 if (result.success) {
                     window.location.href = 'thank-you.html';
                 } else {
-                    formMessages.innerHTML = result.errors ? result.errors.join('<br>') : result.error || 'Something went wrong.';
+                    formMessages.textContent = '';
+                    var msgs = result.errors || [result.error || 'Something went wrong.'];
+                    msgs.forEach(function(msg, i) { if (i > 0) formMessages.appendChild(document.createElement('br')); formMessages.appendChild(document.createTextNode(msg)); });
                     formMessages.className = 'form-messages error';
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Send Message';
                 }
             } catch (error) {
-                formMessages.innerHTML = 'Unable to submit form. Please try again.';
+                formMessages.textContent = 'Unable to submit form. Please try again.';
                 formMessages.className = 'form-messages error';
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Send Message';
