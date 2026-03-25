@@ -34,6 +34,11 @@ module.exports = function createAdminRouter(db) {
       featured INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS blog_redirects (
+      old_slug TEXT PRIMARY KEY,
+      new_slug TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
     )
   `);
 
@@ -915,6 +920,20 @@ module.exports = function createAdminRouter(db) {
     const cleanSlug = (slug || title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     if (id) {
+      // Check if slug changed — if so, create a redirect from old → new
+      const existing = db.prepare('SELECT slug FROM blog_posts WHERE id = ?').get(id);
+      if (existing && existing.slug !== cleanSlug) {
+        // Delete old HTML file
+        const oldFilePath = path.join(__dirname, 'public', 'blog', existing.slug + '.html');
+        if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
+
+        // Update any existing redirects that pointed to the old slug to point to the new one
+        db.prepare('UPDATE blog_redirects SET new_slug = ? WHERE new_slug = ?').run(cleanSlug, existing.slug);
+
+        // Create redirect from old slug to new slug
+        db.prepare('INSERT OR REPLACE INTO blog_redirects (old_slug, new_slug) VALUES (?, ?)').run(existing.slug, cleanSlug);
+      }
+
       // Update existing
       db.prepare(`UPDATE blog_posts SET title=?, slug=?, excerpt=?, content=?, category=?, read_time=?, featured_image=?, meta_title=?, meta_description=?, published=?, featured=?, updated_at=datetime('now') WHERE id=?`)
         .run(title, cleanSlug, excerpt || '', content || '', category || 'General', read_time || '5 min read', featuredImage, meta_title || '', meta_description || '', published, featured, id);

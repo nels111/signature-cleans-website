@@ -593,6 +593,21 @@ app.get('/sitemap.xml', (req, res) => {
   }
 });
 
+// Blog permalink redirects — 301 redirect old slugs to new ones
+app.use('/blog', (req, res, next) => {
+  const slug = req.path.replace(/^\//, '').replace(/\.html$/, '');
+  if (!slug) return next();
+  try {
+    const redirect = db.prepare('SELECT new_slug FROM blog_redirects WHERE old_slug = ?').get(slug);
+    if (redirect) {
+      return res.redirect(301, '/blog/' + redirect.new_slug + '.html');
+    }
+  } catch (e) {
+    // Table may not exist yet (before admin panel first load) — skip
+  }
+  next();
+});
+
 // Static files — cache CSS/JS/images for 7 days, HTML for 1 hour
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
