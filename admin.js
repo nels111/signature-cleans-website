@@ -2476,5 +2476,14 @@ ${postCards}
   // Inject head tags on startup (ensures seeded/admin tags are in HTML files)
   injectHeadTags();
 
+  // Auto-regenerate all blog posts from database on startup
+  // This ensures the DB is always the source of truth, even after git deploys
+  const publishedPosts = db.prepare('SELECT * FROM blog_posts WHERE published = 1').all();
+  if (publishedPosts.length > 0) {
+    publishedPosts.forEach(post => generateBlogPostHTML(post));
+    regenerateBlogHub();
+    console.log(`✓ Regenerated ${publishedPosts.length} blog posts from database`);
+  }
+
   return router;
 };

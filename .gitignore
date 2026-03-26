@@ -38,4 +38,10 @@ tmp/
 temp/
 .cache/
 
+# Generated blog HTML (source of truth is the database)
+public/blog/*.html
+
+# OMC plugin state
+.omc/
+
 
