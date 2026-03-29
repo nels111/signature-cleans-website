@@ -345,13 +345,13 @@ a {
 .nav-call {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: var(--color-accent);
     color: var(--color-background) !important;
-    padding: 0.5rem 1.25rem;
+    padding: 0.4rem 1rem;
     border-radius: 100px;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     transition: all var(--transition-fast);
     white-space: nowrap;
 }
@@ -361,8 +361,8 @@ a {
 }
 
 .nav-call-icon {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
 }
 
@@ -561,14 +561,14 @@ a {
 .hero-call {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: transparent;
     color: var(--color-primary);
     border: 2px solid var(--color-primary);
-    padding: 0.875rem 2rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 100px;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
     transition: all var(--transition-fast);
 }
 
@@ -579,13 +579,13 @@ a {
 
 .hero-call svg {
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
 }
 
 .hero-call-number {
-    display: block;
-    font-size: 1.25rem;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    margin-left: 2px;
 }
 
 .hero-social {
@@ -599,8 +599,8 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--color-surface);
     color: var(--color-secondary);
@@ -613,8 +613,8 @@ a {
 }
 
 .hero-social svg {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
 }
 
 .hero-image {
